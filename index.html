@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google" content="notranslate">
     <title>VoiceNote Pro</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
@@ -11,7 +12,6 @@
             --bg-color: #121212;
             --surface-color: #1e1e1e;
             --primary-color: #bb86fc;
-            --primary-variant: #3700b3;
             --text-main: #e0e0e0;
             --text-muted: #a0a0a0;
             --error: #cf6679;
@@ -41,10 +41,10 @@
         #editor {
             flex-grow: 1; padding: 20px; overflow-y: auto; font-size: 1.1rem; line-height: 1.6; outline: none;
         }
-        #editor h1 { font-size: 1.8rem; margin: 10px 0; color: var(--primary-color); }
-        #editor h2 { font-size: 1.4rem; margin: 8px 0; color: var(--text-main); }
+        #editor h1 { font-size: 1.8rem; margin: 10px 0; color: var(--primary-color); font-weight: bold; }
+        #editor h2 { font-size: 1.4rem; margin: 8px 0; color: var(--text-main); font-weight: bold; }
         #editor h6 { font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin: 5px 0; }
-        #editor div, #editor p { margin-bottom: 10px; }
+        #editor div, #editor p { margin-bottom: 10px; font-size: 1.1rem; font-weight: normal; }
         #editor:empty:before { content: attr(placeholder); color: var(--text-muted); }
 
         /* Hidden Mode Overlay */
@@ -80,8 +80,10 @@
         }
         .shortcut-chip:active { background: var(--primary-color); color: var(--bg-color); }
 
-        .action-bar { display: flex; justify-content: space-around; align-items: center; padding: 10px; }
+        .action-bar { display: flex; justify-content: center; align-items: center; padding: 10px; position: relative; height: 80px; }
         
+        .action-bar .left-btn { position: absolute; left: 20px; }
+
         #mic-btn {
             width: 60px; height: 60px; border-radius: 50%; background: var(--primary-color); border: none; color: var(--bg-color); 
             cursor: pointer; box-shadow: 0 4px 10px rgba(187, 134, 252, 0.4); display: flex; align-items: center; justify-content: center;
@@ -104,7 +106,7 @@
             background: var(--bg-color); border: 1px solid var(--border); color: white; border-radius: 4px; font-size: 1rem;
         }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .btn { padding: 10px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        .btn { padding: 10px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-primary { background: var(--primary-color); color: var(--bg-color); }
         .btn-danger { background: var(--error); color: white; }
         .btn-secondary { background: #333; color: white; }
@@ -113,6 +115,7 @@
         .recording-item audio { width: 100%; height: 40px; outline: none; }
         
         .svg-icon { width: 24px; height: 24px; fill: currentColor; }
+        .svg-small { width: 18px; height: 18px; fill: currentColor; }
     </style>
 </head>
 <body>
@@ -148,13 +151,13 @@
     <footer>
         <div id="shortcut-bar"></div>
         <div class="action-bar">
-            <button class="icon-btn" onclick="toggleVisibility()">
+            <button class="icon-btn left-btn" onclick="toggleVisibility()">
                 <svg class="svg-icon" id="eye-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
             </button>
+            
             <button id="mic-btn" onclick="toggleMic()">
                 <svg class="svg-icon" style="color:var(--bg-color);" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
             </button>
-            <div style="width: 40px;"></div> <!-- Spacer -->
         </div>
     </footer>
 
@@ -162,11 +165,599 @@
     <div id="notes-modal" class="modal">
         <div class="modal-header">
             <h2>My Notes</h2>
-            <button class="icon-btn" onclick="closeModal('notes-modal')">✖</button>
+            <button class="icon-btn" onclick="closeModal('notes-modal')">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
         </div>
         <div class="modal-body" id="notes-list"></div>
         <div style="padding: 20px; border-top: 1px solid var(--border);">
             <button class="btn btn-primary" style="width: 100%" onclick="createNewNote()">+ Create New Note</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-header">
+            <h2>Settings & Commands</h2>
+            <button class="icon-btn" onclick="closeModal('settings-modal')">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="list-item">
+                <label style="color: var(--primary-color); font-weight: bold;">Speech Language</label>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">Ensure this matches the language you are speaking.</p>
+                <select id="lang-select" onchange="changeLanguage(this.value)">
+                    <option value="en-US">English (US)</option>
+                    <option value="en-GB">English (UK)</option>
+                    <option value="de-DE">German (Deutsch)</option>
+                    <option value="fr-FR">French (Français)</option>
+                    <option value="it-IT">Italian (Italiano)</option>
+                </select>
+            </div>
+            <h3 style="margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">Shortcuts</h3>
+            <div id="settings-list"></div>
+        </div>
+        <div style="padding: 20px; border-top: 1px solid var(--border);">
+            <button class="btn btn-secondary" style="width: 100%" onclick="addNewShortcut()">+ Add New Command</button>
+        </div>
+    </div>
+
+    <!-- Recordings Modal -->
+    <div id="recordings-modal" class="modal">
+        <div class="modal-header">
+            <h2>Saved Recordings</h2>
+            <button class="icon-btn" onclick="closeModal('recordings-modal')">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="modal-body" id="recordings-list"></div>
+    </div>
+
+    <script>
+        // --- Core Variables & State ---
+        let isListening = false;
+        let isHidden = false;
+        let recognition = null;
+        let mediaRecorder = null;
+        let db;
+        let lastSpeechStart = 0;
+        const CHUNK_DURATION = 30000;
+        
+        const editor = document.getElementById('editor');
+        const interimDisplay = document.getElementById('interim-text');
+        
+        let savedCaretRange = null;
+
+        // --- Data Models ---
+        let notes = JSON.parse(localStorage.getItem('voicenote_notes')) || [];
+        let activeNoteId = localStorage.getItem('voicenote_active_id');
+        let currentLang = localStorage.getItem('voicenote_lang') || 'en-US';
+
+        const DEFAULT_SHORTCUTS = [
+            { id: 1, phrase: "new line", type: "action", action: "newline", showButton: true, order: 1 },
+            { id: 2, phrase: "head head", type: "action", action: "h1", showButton: true, order: 2 },
+            { id: 3, phrase: "sub sub", type: "action", action: "h2", showButton: true, order: 3 },
+            { id: 4, phrase: "foot foot", type: "action", action: "footnote", showButton: true, order: 4 },
+            { id: 5, phrase: "normal text", type: "action", action: "normal", showButton: true, order: 5 },
+            { id: 6, phrase: "Klammer auf", type: "text", text: "(", showButton: true, order: 6 },
+            { id: 7, phrase: "Klammer zu", type: "text", text: ")", showButton: true, order: 7 },
+        ];
+        
+        let shortcuts = JSON.parse(localStorage.getItem('voicenote_shortcuts'));
+        if (!shortcuts) {
+            shortcuts = DEFAULT_SHORTCUTS;
+        } else {
+            // Auto-add "normal text" if upgrading from an older version
+            if (!shortcuts.find(s => s.action === 'normal')) {
+                shortcuts.push({ id: Date.now(), phrase: "normal text", type: "action", action: "normal", showButton: true, order: shortcuts.length + 1 });
+                localStorage.setItem('voicenote_shortcuts', JSON.stringify(shortcuts));
+            }
+        }
+
+        // --- Initialization ---
+        window.onload = () => {
+            document.getElementById('lang-select').value = currentLang;
+            initNotes();
+            renderShortcutBar();
+            initIndexedDB();
+            setupSpeechRecognition();
+            
+            // Caret Tracking
+            editor.addEventListener('keyup', saveSelection);
+            editor.addEventListener('mouseup', saveSelection);
+            editor.addEventListener('touchend', saveSelection);
+            editor.addEventListener('focusout', saveSelection);
+            editor.addEventListener('input', () => { autoSaveNote(); saveSelection(); });
+
+            if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+        };
+
+        // --- Caret/Cursor Management ---
+        function saveSelection() {
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
+                savedCaretRange = sel.getRangeAt(0);
+            }
+        }
+
+        function restoreSelection() {
+            editor.focus();
+            if (savedCaretRange) {
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(savedCaretRange);
+            } else {
+                const range = document.createRange();
+                range.selectNodeContents(editor);
+                range.collapse(false);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+
+        // --- Notes Management ---
+        function initNotes() {
+            if (notes.length === 0) {
+                const newNote = { id: Date.now(), title: "Note 1", content: "<div><br></div>", timestamp: Date.now() };
+                notes.push(newNote);
+                activeNoteId = newNote.id;
+                saveNotesData();
+            }
+            if (!activeNoteId || !notes.find(n => n.id == activeNoteId)) {
+                activeNoteId = notes[0].id;
+            }
+            loadActiveNote();
+        }
+
+        function saveNotesData() {
+            localStorage.setItem('voicenote_notes', JSON.stringify(notes));
+            localStorage.setItem('voicenote_active_id', activeNoteId);
+        }
+
+        function loadActiveNote() {
+            const note = notes.find(n => n.id == activeNoteId);
+            if (note) {
+                editor.innerHTML = note.content;
+                document.getElementById('active-note-title').textContent = note.title;
+            }
+        }
+
+        function autoSaveNote() {
+            const note = notes.find(n => n.id == activeNoteId);
+            if (note) {
+                note.content = editor.innerHTML;
+                let plainText = editor.innerText.trim();
+                if (plainText.length > 0) {
+                    note.title = plainText.split('\n')[0].substring(0, 25) || "Note";
+                    document.getElementById('active-note-title').textContent = note.title;
+                }
+                note.timestamp = Date.now();
+                saveNotesData();
+            }
+        }
+
+        function createNewNote() {
+            const newNote = { id: Date.now(), title: "New Note", content: "<div><br></div>", timestamp: Date.now() };
+            notes.push(newNote);
+            activeNoteId = newNote.id;
+            saveNotesData();
+            loadActiveNote();
+            renderNotesList();
+            closeModal('notes-modal');
+        }
+
+        function switchNote(id) {
+            autoSaveNote();
+            activeNoteId = id;
+            saveNotesData();
+            loadActiveNote();
+            closeModal('notes-modal');
+        }
+
+        function deleteNote(id, event) {
+            event.stopPropagation();
+            if(!confirm('Delete this note?')) return;
+            notes = notes.filter(n => n.id != id);
+            if(notes.length === 0) {
+                createNewNote();
+            } else {
+                if(activeNoteId == id) activeNoteId = notes[0].id;
+                saveNotesData();
+                loadActiveNote();
+                renderNotesList();
+            }
+        }
+
+        function renderNotesList() {
+            const list = document.getElementById('notes-list');
+            list.innerHTML = '';
+            notes.sort((a,b) => b.timestamp - a.timestamp).forEach(note => {
+                const date = new Date(note.timestamp).toLocaleDateString();
+                const div = document.createElement('div');
+                div.className = 'list-item flex-between';
+                div.style.cursor = 'pointer';
+                if(note.id == activeNoteId) div.style.borderLeft = `4px solid var(--primary-color)`;
+                
+                div.onclick = () => switchNote(note.id);
+                div.innerHTML = `
+                    <div style="overflow:hidden;">
+                        <h3 style="font-size:1.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${note.title}</h3>
+                        <span style="font-size:0.8rem; color:var(--text-muted);">${date}</span>
+                    </div>
+                    <button class="icon-btn" style="color:var(--error);" onclick="deleteNote(${note.id}, event)">
+                        <svg class="svg-small" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // --- Database for Audio ---
+        function initIndexedDB() {
+            const request = indexedDB.open("VoiceNoteDB", 1);
+            request.onupgradeneeded = (e) => {
+                db = e.target.result;
+                if (!db.objectStoreNames.contains('recordings')) {
+                    db.createObjectStore('recordings', { keyPath: 'id', autoIncrement: true });
+                }
+            };
+            request.onsuccess = (e) => { db = e.target.result; };
+        }
+
+        function saveAudioToDB(blob) {
+            if(!db || blob.size === 0) return;
+            const tx = db.transaction('recordings', 'readwrite');
+            const store = tx.objectStore('recordings');
+            store.add({ timestamp: Date.now(), blob: blob });
+        }
+
+        // --- Speech Recognition ---
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('voicenote_lang', lang);
+            if (recognition) {
+                const wasListening = isListening;
+                if (wasListening) toggleMic(); // Stop
+                recognition.lang = currentLang;
+                if (wasListening) toggleMic(); // Restart
+            }
+        }
+
+        function setupSpeechRecognition() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) return alert("Speech Recognition not supported in this browser.");
+            
+            recognition = new SpeechRec();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = currentLang;
+
+            recognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        processFinalTranscript(transcript);
+                    } else {
+                        interim += transcript;
+                    }
+                }
+                if (interim.trim() !== '') {
+                    interimDisplay.style.display = 'block';
+                    interimDisplay.textContent = interim;
+                } else {
+                    interimDisplay.style.display = 'none';
+                }
+            };
+
+            // Smart Backoff logic to prevent infinite beeping loop
+            recognition.onend = () => {
+                if (isListening) {
+                    let timeSinceLastStart = Date.now() - lastSpeechStart;
+                    let delay = timeSinceLastStart < 1500 ? 2000 : 100; // If failing rapidly, wait 2 seconds.
+                    
+                    setTimeout(() => {
+                        if (isListening) {
+                            try { 
+                                lastSpeechStart = Date.now();
+                                recognition.start(); 
+                            } catch(e){}
+                        }
+                    }, delay);
+                }
+            };
+            
+            recognition.onerror = (e) => { 
+                console.warn('Speech error:', e.error);
+                if(e.error === 'not-allowed') {
+                    forceStopAll();
+                }
+            };
+        }
+
+        async function startAudioRecording() {
+            try {
+                // Ensure we request stream with noise cancellation to help transcription
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true } });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => saveAudioToDB(e.data);
+                mediaRecorder.start(CHUNK_DURATION);
+            } catch (err) {
+                console.error("Mic permission denied for audio", err);
+            }
+        }
+
+        function stopAudioRecording() {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(t => t.stop());
+            }
+        }
+        
+        function forceStopAll() {
+            isListening = false;
+            document.getElementById('mic-btn').classList.remove('listening');
+            try { recognition.stop(); } catch(e){}
+            stopAudioRecording();
+            interimDisplay.style.display = 'none';
+        }
+
+        async function toggleMic() {
+            const btn = document.getElementById('mic-btn');
+            if (isListening) {
+                forceStopAll();
+            } else {
+                isListening = true;
+                btn.classList.add('listening');
+                editor.focus();
+                
+                // 1. Grab mic for recording first
+                await startAudioRecording();
+                
+                // 2. Wait briefly to let OS settle mic permissions, then start transcription
+                setTimeout(() => {
+                    if (isListening) {
+                        lastSpeechStart = Date.now();
+                        try { recognition.start(); } catch(e){}
+                    }
+                }, 500);
+            }
+        }
+
+        function toggleVisibility() {
+            isHidden = !isHidden;
+            const overlay = document.getElementById('hidden-overlay');
+            const eyeIcon = document.getElementById('eye-icon');
+            if (isHidden) {
+                overlay.style.display = 'flex';
+                eyeIcon.innerHTML = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
+            } else {
+                overlay.style.display = 'none';
+                eyeIcon.innerHTML = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
+            }
+        }
+
+        // --- Processing Logic & Commands ---
+        function processFinalTranscript(rawText) {
+            interimDisplay.style.display = 'none';
+            restoreSelection(); 
+
+            let text = " " + rawText.trim() + " ";
+            
+            // Text shortcuts
+            shortcuts.filter(s => s.type === 'text').forEach(sc => {
+                const reg = new RegExp(sc.phrase, 'gi');
+                text = text.replace(reg, sc.text);
+            });
+
+            // Action shortcuts
+            let actionShortcuts = shortcuts.filter(s => s.type === 'action');
+            let foundAction = false;
+
+            for (let sc of actionShortcuts) {
+                const index = text.toLowerCase().indexOf(sc.phrase.toLowerCase());
+                if (index !== -1) {
+                    let before = text.substring(0, index);
+                    if (before.trim()) document.execCommand('insertText', false, before);
+                    
+                    executeCommand(sc.action);
+
+                    let after = text.substring(index + sc.phrase.length);
+                    if (after.trim()) processFinalTranscript(after); 
+                    
+                    foundAction = true;
+                    break;
+                }
+            }
+
+            if (!foundAction && text.trim()) {
+                document.execCommand('insertText', false, text);
+            }
+            
+            saveSelection();
+            autoSaveNote();
+        }
+
+        function executeCommand(action) {
+            restoreSelection(); 
+            
+            if (action === 'newline') {
+                document.execCommand('insertParagraph', false, null);
+                document.execCommand('formatBlock', false, 'DIV'); 
+            } else if (action === 'h1') {
+                document.execCommand('formatBlock', false, 'H1');
+            } else if (action === 'h2') {
+                document.execCommand('formatBlock', false, 'H2');
+            } else if (action === 'footnote') {
+                document.execCommand('formatBlock', false, 'H6');
+            } else if (action === 'normal') {
+                document.execCommand('formatBlock', false, 'DIV');
+                document.execCommand('removeFormat', false, null);
+            }
+            
+            saveSelection();
+            autoSaveNote();
+        }
+
+        // --- Shortcuts UI ---
+        function renderShortcutBar() {
+            const bar = document.getElementById('shortcut-bar');
+            bar.innerHTML = '';
+            shortcuts.sort((a, b) => a.order - b.order).forEach(sc => {
+                if (sc.showButton) {
+                    const btn = document.createElement('div');
+                    btn.className = 'shortcut-chip';
+                    btn.textContent = sc.phrase;
+                    
+                    btn.onmousedown = (e) => {
+                        e.preventDefault(); 
+                        restoreSelection();
+                        if (sc.type === 'action') executeCommand(sc.action);
+                        else {
+                            document.execCommand('insertText', false, sc.text + " ");
+                            saveSelection();
+                            autoSaveNote();
+                        }
+                    };
+                    bar.appendChild(btn);
+                }
+            });
+        }
+
+        // --- Modals & Settings ---
+        function openModal(id) {
+            if(id === 'notes-modal') renderNotesList();
+            if(id === 'settings-modal') renderSettingsList();
+            if(id === 'recordings-modal') renderRecordingsList();
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function renderSettingsList() {
+            const list = document.getElementById('settings-list');
+            list.innerHTML = '';
+            shortcuts.sort((a,b) => a.order - b.order).forEach((sc, index) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <label>Phrase spoken:</label>
+                    <input type="text" value="${sc.phrase}" onchange="updateShortcut(${sc.id}, 'phrase', this.value)">
+                    
+                    <label>Action Type:</label>
+                    <select onchange="updateShortcut(${sc.id}, 'type', this.value); renderSettingsList();">
+                        <option value="text" ${sc.type === 'text' ? 'selected' : ''}>Insert Text</option>
+                        <option value="action" ${sc.type === 'action' ? 'selected' : ''}>Format Action</option>
+                    </select>
+
+                    ${sc.type === 'text' ? 
+                        `<label>Text to type:</label><input type="text" value="${sc.text}" onchange="updateShortcut(${sc.id}, 'text', this.value)">` : 
+                        `<label>Formatting:</label>
+                         <select onchange="updateShortcut(${sc.id}, 'action', this.value)">
+                            <option value="newline" ${sc.action === 'newline' ? 'selected' : ''}>New Line</option>
+                            <option value="h1" ${sc.action === 'h1' ? 'selected' : ''}>Title (H1)</option>
+                            <option value="h2" ${sc.action === 'h2' ? 'selected' : ''}>Subtitle (H2)</option>
+                            <option value="footnote" ${sc.action === 'footnote' ? 'selected' : ''}>Footnote</option>
+                            <option value="normal" ${sc.action === 'normal' ? 'selected' : ''}>Normal Text</option>
+                         </select>`
+                    }
+                    
+                    <div class="flex-between" style="margin-top: 15px;">
+                        <label style="display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" style="width:18px; height:18px; margin:0;" ${sc.showButton ? 'checked' : ''} onchange="updateShortcut(${sc.id}, 'showButton', this.checked)"> Show Button
+                        </label>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn btn-secondary" onclick="moveShortcut(${index}, -1)">↑</button>
+                            <button class="btn btn-secondary" onclick="moveShortcut(${index}, 1)">↓</button>
+                            <button class="btn btn-danger" onclick="deleteShortcut(${sc.id})">
+                                <svg class="svg-small" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function updateShortcut(id, key, value) {
+            const sc = shortcuts.find(s => s.id === id);
+            if (sc) sc[key] = value;
+            saveShortcuts();
+        }
+
+        function moveShortcut(index, direction) {
+            if (index + direction < 0 || index + direction >= shortcuts.length) return;
+            const temp = shortcuts[index].order;
+            shortcuts[index].order = shortcuts[index + direction].order;
+            shortcuts[index + direction].order = temp;
+            saveShortcuts();
+            renderSettingsList();
+        }
+
+        function deleteShortcut(id) {
+            shortcuts = shortcuts.filter(s => s.id !== id);
+            saveShortcuts();
+            renderSettingsList();
+        }
+
+        function addNewShortcut() {
+            const newId = shortcuts.length > 0 ? Math.max(...shortcuts.map(s => s.id)) + 1 : 1;
+            shortcuts.push({ id: newId, phrase: "new word", type: "text", text: "word", showButton: true, order: shortcuts.length + 1 });
+            saveShortcuts();
+            renderSettingsList();
+        }
+
+        function saveShortcuts() {
+            localStorage.setItem('voicenote_shortcuts', JSON.stringify(shortcuts));
+            renderShortcutBar();
+        }
+
+        // --- Recordings Viewer ---
+        function renderRecordingsList() {
+            const list = document.getElementById('recordings-list');
+            list.innerHTML = '<p>Loading recordings...</p>';
+            if(!db) return list.innerHTML = '<p>Database not available.</p>';
+
+            const tx = db.transaction('recordings', 'readonly');
+            const store = tx.objectStore('recordings');
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                list.innerHTML = '';
+                const data = request.result.reverse(); 
+                if(data.length === 0) return list.innerHTML = '<p>No recordings yet.</p>';
+                
+                data.forEach(item => {
+                    const blobUrl = URL.createObjectURL(item.blob);
+                    const date = new Date(item.timestamp).toLocaleString();
+                    const div = document.createElement('div');
+                    div.className = 'list-item recording-item';
+                    div.innerHTML = `
+                        <div class="flex-between">
+                            <strong>${date}</strong>
+                            <button class="btn btn-danger" style="padding: 4px 8px; font-size:0.8rem;" onclick="deleteRecording(${item.id})">Delete</button>
+                        </div>
+                        <audio controls src="${blobUrl}"></audio>
+                    `;
+                    list.appendChild(div);
+                });
+            };
+        }
+
+        function deleteRecording(id) {
+            if(!confirm('Delete this audio segment?')) return;
+            const tx = db.transaction('recordings', 'readwrite');
+            tx.objectStore('recordings').delete(id);
+            tx.oncomplete = () => renderRecordingsList();
+        }
+    </script>
+</body>
+</html>
+>+ Create New Note</button>
         </div>
     </div>
 
