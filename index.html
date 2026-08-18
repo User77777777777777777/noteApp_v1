@@ -2,470 +2,1106 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#121212">
-<meta name="description" content="VoiceNote Pro - persistent voice transcription notes">
-<link rel="manifest" href="./manifest.json">
-
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>VoiceNote Pro</title>
-
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#121212">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VoiceNote">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    :root {
-        --bg: #0d0e10;
-        --surface: #15171a;
-        --surface-2: #1c1f23;
-        --surface-3: #24282d;
-        --border: #30343a;
-        --text: #f1f3f5;
-        --muted: #9299a3;
-        --accent: #bb86fc;
-        --accent-2: #9b5de5;
-        --danger: #ff6670;
-        --success: #4fd18b;
-        --radius: 16px;
-        --safe-bottom: env(safe-area-inset-bottom, 0px);
+  :root{
+    --bg:#121212;
+    --page-bg:#0a0a0c;
+    --surface:#1b1c21;
+    --surface-2:#232429;
+    --surface-3:#2b2d34;
+    --border:#312f39;
+    --border-soft:#2a2830;
+    --text:#f2f1f5;
+    --text-dim:#a29fae;
+    --text-faint:#6f6c79;
+    --accent:#bb86fc;
+    --accent-strong:#cda2ff;
+    --accent-dim:rgba(187,134,252,.14);
+    --rec:#ff6b6b;
+    --rec-dim:rgba(255,107,107,.16);
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    --font-display:'Sora',system-ui,sans-serif;
+    --font-body:'Inter',system-ui,sans-serif;
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--page-bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-tap-highlight-color:transparent;
+    overscroll-behavior-y:none;
+  }
+  button,input,select,textarea{font-family:inherit;color:inherit;}
+  button{cursor:pointer;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  #app{
+    position:relative;
+    max-width:520px;
+    margin:0 auto;
+    min-height:100dvh;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  @media (min-width:640px){
+    body{padding:28px 0;}
+    #app{
+      min-height:calc(100dvh - 56px);
+      border-radius:28px;
+      box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px var(--border-soft);
     }
+  }
 
-    * {
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
+  .view{display:flex;flex-direction:column;flex:1;min-height:0;}
+  .hidden{display:none !important;}
+
+  /* ---------- header ---------- */
+  .topbar{
+    display:flex;align-items:center;gap:10px;
+    padding:calc(14px + var(--safe-top)) 16px 14px;
+    background:var(--surface);
+    border-bottom:1px solid var(--border-soft);
+    flex-shrink:0;
+  }
+  .app-title{
+    font-family:var(--font-display);font-weight:800;font-size:20px;letter-spacing:-.01em;
+    margin:0;flex:1;
+  }
+  .icon-btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:12px;
+    background:transparent;border:1px solid transparent;color:var(--text-dim);
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .icon-btn svg{width:20px;height:20px;}
+  .icon-btn:hover{background:var(--surface-2);color:var(--text);}
+  .icon-btn.active{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-dim);}
+  .icon-btn.danger:hover{color:var(--rec);background:var(--rec-dim);}
+  .icon-btn.small{width:30px;height:30px;border-radius:9px;}
+  .icon-btn.small svg{width:16px;height:16px;}
+  .icon-btn:disabled{opacity:.3;cursor:default;}
+  .icon-btn:disabled:hover{background:transparent;color:var(--text-dim);}
+
+  .title-input{
+    flex:1;min-width:0;
+    background:transparent;border:none;
+    font-family:var(--font-display);font-weight:700;font-size:18px;
+    color:var(--text);padding:6px 2px;
+  }
+  .title-input::placeholder{color:var(--text-faint);font-weight:600;}
+
+  /* ---------- list view ---------- */
+  #listScroll{flex:1;overflow-y:auto;padding:16px 16px calc(100px + var(--safe-bottom));}
+  .empty-state{
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    gap:10px;padding:60px 24px;color:var(--text-dim);
+  }
+  .empty-state .glyph{
+    width:64px;height:64px;border-radius:50%;
+    background:var(--surface-2);display:flex;align-items:center;justify-content:center;
+    color:var(--accent);margin-bottom:6px;
+  }
+  .empty-state .glyph svg{width:28px;height:28px;}
+  .empty-state h2{font-family:var(--font-display);font-size:17px;color:var(--text);margin:0;}
+  .empty-state p{margin:0;font-size:14px;line-height:1.5;max-width:260px;}
+
+  .note-card{
+    position:relative;background:var(--surface);border:1px solid var(--border-soft);
+    border-radius:var(--radius-md);padding:14px 44px 14px 16px;margin-bottom:10px;
+    transition:border-color .15s, transform .1s;
+  }
+  .note-card:active{transform:scale(.99);}
+  .note-card:hover{border-color:var(--border);}
+  .note-title{font-family:var(--font-display);font-weight:700;font-size:15.5px;margin:0 0 4px;color:var(--text);}
+  .note-preview{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--text-dim);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .note-date{font-size:11.5px;color:var(--text-faint);letter-spacing:.02em;text-transform:uppercase;}
+  .note-delete{position:absolute;top:10px;right:10px;}
+
+  .fab{
+    position:absolute;right:20px;bottom:calc(24px + var(--safe-bottom));
+    width:58px;height:58px;border-radius:50%;
+    background:linear-gradient(155deg,var(--accent-strong),var(--accent));
+    border:none;color:#1a1023;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 26px rgba(187,134,252,.35), 0 2px 6px rgba(0,0,0,.4);
+  }
+  .fab svg{width:26px;height:26px;}
+  .fab:active{transform:scale(.94);}
+
+  /* ---------- editor view ---------- */
+  .cmd-toolbar{
+    display:flex;gap:8px;padding:10px 14px;overflow-x:auto;
+    background:var(--surface);border-bottom:1px solid var(--border-soft);
+    flex-shrink:0;scrollbar-width:none;
+  }
+  .cmd-toolbar::-webkit-scrollbar{display:none;}
+  .cmd-chip{
+    flex-shrink:0;padding:8px 14px;border-radius:999px;
+    background:var(--surface-2);border:1px solid var(--border-soft);
+    font-size:13px;font-weight:600;color:var(--text-dim);white-space:nowrap;
+    transition:background .12s,color .12s,transform .1s;
+  }
+  .cmd-chip:active{transform:scale(.95);}
+  .cmd-chip.flash{background:var(--accent-dim);color:var(--accent-strong);border-color:var(--accent);}
+
+  .editor-wrap{flex:1;min-height:0;position:relative;background:var(--bg);}
+  .editor-scroll{height:100%;overflow-y:auto;padding:20px 18px calc(150px + var(--safe-bottom));}
+  #editor{outline:none;min-height:100%;caret-color:var(--accent);}
+  .line{margin:0 0 6px;word-wrap:break-word;white-space:pre-wrap;}
+  .line-normal{font:400 16.5px/1.65 var(--font-body);color:var(--text);}
+  .line-h1{font:700 27px/1.32 var(--font-display);color:var(--text);margin:16px 0 8px;letter-spacing:-.01em;}
+  .line-h2{font:600 19px/1.4 var(--font-display);color:var(--accent-strong);margin:12px 0 6px;}
+  .line-footnote{font:400 12.5px/1.55 var(--font-body);color:var(--text-dim);font-style:italic;}
+  .interim-text{color:var(--text-faint);}
+
+  .placeholder-overlay{
+    position:absolute;top:20px;left:18px;right:18px;
+    color:var(--text-faint);font-size:16.5px;pointer-events:none;
+  }
+
+  .hide-overlay{
+    position:absolute;inset:0;background:var(--bg);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    padding:24px;text-align:center;
+  }
+  .hide-overlay .pulse-dot{
+    width:14px;height:14px;border-radius:50%;background:var(--rec);
+    box-shadow:0 0 0 0 var(--rec-dim);
+    animation:dotpulse 1.6s ease-out infinite;
+  }
+  @keyframes dotpulse{
+    0%{box-shadow:0 0 0 0 rgba(255,107,107,.5);}
+    70%{box-shadow:0 0 0 18px rgba(255,107,107,0);}
+    100%{box-shadow:0 0 0 0 rgba(255,107,107,0);}
+  }
+  .hide-overlay p{margin:0;color:var(--text-dim);font-size:14.5px;max-width:240px;line-height:1.5;}
+  .hide-overlay .link-btn{
+    background:none;border:none;color:var(--accent);font-size:13.5px;font-weight:600;
+    text-decoration:underline;padding:4px;
+  }
+
+  /* ---------- bottom bar ---------- */
+  .bottombar{
+    position:absolute;left:0;right:0;bottom:0;
+    padding:10px 18px calc(16px + var(--safe-bottom));
+    background:linear-gradient(180deg, rgba(18,18,18,0) 0%, var(--bg) 34%);
+    display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;
+  }
+  .status-text{font-size:12.5px;color:var(--text-dim);min-height:16px;pointer-events:none;}
+  .bottombar-row{display:flex;align-items:center;justify-content:center;gap:26px;pointer-events:auto;}
+
+  .mic-wrap{position:relative;width:78px;height:78px;display:flex;align-items:center;justify-content:center;}
+  .waveform{
+    position:absolute;display:flex;align-items:center;justify-content:center;gap:4px;
+    width:100%;height:100%;pointer-events:none;
+  }
+  .waveform span{
+    width:3px;height:6px;border-radius:3px;background:var(--rec);opacity:0;
+    transform:scaleY(1);
+  }
+  .mic-wrap.listening .waveform span{opacity:.55;animation:wavebar 1s ease-in-out infinite;}
+  .mic-wrap.listening .waveform span:nth-child(1){animation-delay:0s;}
+  .mic-wrap.listening .waveform span:nth-child(2){animation-delay:.12s;}
+  .mic-wrap.listening .waveform span:nth-child(3){animation-delay:.24s;}
+  .mic-wrap.listening .waveform span:nth-child(4){animation-delay:.12s;}
+  .mic-wrap.listening .waveform span:nth-child(5){animation-delay:0s;}
+  @keyframes wavebar{
+    0%,100%{height:8px;}
+    50%{height:34px;}
+  }
+  .mic-wrap.listening::before,.mic-wrap.listening::after{
+    content:'';position:absolute;inset:14px;border-radius:50%;
+    border:1.5px solid var(--rec);opacity:0;
+    animation:sonar 1.8s ease-out infinite;
+  }
+  .mic-wrap.listening::after{animation-delay:.6s;}
+  @keyframes sonar{
+    0%{opacity:.6;transform:scale(.7);}
+    100%{opacity:0;transform:scale(1.9);}
+  }
+  .mic-btn{
+    position:relative;width:64px;height:64px;border-radius:50%;
+    background:var(--surface-2);border:1.5px solid var(--border);
+    color:var(--accent);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,.35);transition:background .18s,color .18s,border-color .18s;
+    z-index:1;
+  }
+  .mic-btn svg{width:26px;height:26px;}
+  .mic-btn:active{transform:scale(.95);}
+  .mic-wrap.listening .mic-btn{background:var(--rec);border-color:var(--rec);color:#2b0a0a;}
+  .side-btn{
+    position:relative;width:44px;height:44px;border-radius:50%;
+    background:var(--surface-2);border:1px solid var(--border-soft);color:var(--text-dim);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .side-btn svg{width:19px;height:19px;}
+  .side-btn.active{color:var(--accent);border-color:var(--accent-dim);}
+  .side-btn .badge{
+    position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;
+    background:var(--accent);color:#1a1023;border-radius:999px;
+    font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ---------- recordings sheet ---------- */
+  .sheet-backdrop{
+    position:absolute;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;
+    transition:opacity .2s;z-index:5;
+  }
+  .recordings-sheet{
+    position:absolute;left:0;right:0;bottom:0;max-height:56%;
+    background:var(--surface);border-top:1px solid var(--border);
+    border-radius:20px 20px 0 0;transform:translateY(100%);
+    transition:transform .25s ease;display:flex;flex-direction:column;z-index:6;
+  }
+  .recordings-sheet.open{transform:translateY(0);}
+  .recordings-sheet.open ~ .sheet-backdrop,.sheet-backdrop.show{opacity:1;pointer-events:auto;}
+  .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:3px;margin:10px auto 4px;}
+  .sheet-header{display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;}
+  .sheet-header h3{font-family:var(--font-display);font-size:15px;margin:0;}
+  .sheet-body{overflow-y:auto;padding:4px 16px 20px;}
+  .empty-hint{color:var(--text-faint);font-size:13.5px;text-align:center;padding:24px 10px;}
+  .recording-row{
+    display:flex;flex-direction:column;gap:8px;
+    background:var(--surface-2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);
+    padding:10px 12px;margin-bottom:10px;
+  }
+  .recording-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);}
+  .recording-index{font-weight:700;color:var(--accent);}
+  .recording-row audio{width:100%;height:34px;filter:invert(0);}
+  .recording-actions{display:flex;justify-content:flex-end;}
+
+  /* ---------- settings view ---------- */
+  #settingsScroll{flex:1;overflow-y:auto;padding:16px 16px calc(60px + var(--safe-bottom));}
+  .settings-section{margin-bottom:26px;}
+  .settings-section h4{
+    font-family:var(--font-display);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--text-faint);margin:0 0 10px;
+  }
+  .settings-card{
+    background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius-md);
+    padding:14px 16px;
+  }
+  .setting-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;}
+  .setting-row + .setting-row{border-top:1px solid var(--border-soft);}
+  .setting-row .label-text{font-size:14.5px;font-weight:600;}
+  .setting-row .desc-text{font-size:12.5px;color:var(--text-dim);margin-top:3px;line-height:1.4;}
+  .setting-row input[type=number]{
+    width:70px;background:var(--surface-3);border:1px solid var(--border-soft);border-radius:9px;
+    padding:8px 10px;text-align:center;font-size:14px;
+  }
+
+  .switch{position:relative;display:inline-block;width:42px;height:25px;flex-shrink:0;}
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1;}
+  .switch-track{position:absolute;inset:0;background:var(--surface-3);border:1px solid var(--border);border-radius:999px;transition:background .15s;}
+  .switch-track::after{content:'';position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#e9e6f0;transition:transform .18s;}
+  .switch input:checked + .switch-track{background:var(--accent);border-color:var(--accent);}
+  .switch input:checked + .switch-track::after{transform:translateX(17px);background:#1a1023;}
+  .switch.small{width:36px;height:21px;}
+  .switch.small .switch-track::after{width:15px;height:15px;}
+  .switch.small input:checked + .switch-track::after{transform:translateX(15px);}
+
+  .command-card{
+    background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius-md);
+    padding:14px;margin-bottom:12px;
+  }
+  .command-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+  .command-row label{font-size:11.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;}
+  .command-row input[type=text],.command-row select{
+    background:var(--surface-3);border:1px solid var(--border-soft);border-radius:9px;
+    padding:10px 12px;font-size:14.5px;color:var(--text);width:100%;
+  }
+  .command-row select{appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a29fae' stroke-width='2' stroke-linecap='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat;background-position:right 10px center;background-size:16px;padding-right:34px;}
+  .command-row-actions{flex-direction:row;align-items:center;justify-content:space-between;margin-bottom:0;}
+  .switch-wrap{display:flex;align-items:center;gap:9px;}
+  .switch-caption{font-size:13px;color:var(--text-dim);font-weight:500;text-transform:none;letter-spacing:0;}
+  .command-btn-group{display:flex;gap:6px;}
+
+  .text-btn{
+    width:100%;padding:13px;border-radius:var(--radius-sm);border:1px dashed var(--border);
+    background:transparent;color:var(--accent);font-weight:700;font-size:14px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .text-btn svg{width:17px;height:17px;}
+  .link-row{text-align:center;margin-top:14px;}
+  .link-row button{background:none;border:none;color:var(--text-faint);font-size:13px;text-decoration:underline;padding:8px;}
+
+  /* ---------- toast ---------- */
+  #toast{
+    position:absolute;left:50%;bottom:calc(96px + var(--safe-bottom));
+    transform:translate(-50%,12px);
+    background:var(--surface-3);border:1px solid var(--border);color:var(--text);
+    padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:20;white-space:nowrap;
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== LIST VIEW ===================== -->
+  <section class="view" id="viewList">
+    <header class="topbar">
+      <h1 class="app-title">VoiceNote</h1>
+      <button class="icon-btn" id="settingsBtn" aria-label="Open settings"></button>
+    </header>
+    <div id="listScroll">
+      <div class="empty-state hidden" id="emptyState">
+        <div class="glyph"></div>
+        <h2>No notes yet</h2>
+        <p>Tap the + button to start your first note. You can type, or tap the mic to dictate.</p>
+      </div>
+      <div id="notesList"></div>
+    </div>
+    <button class="fab" id="newNoteBtn" aria-label="Create new note"></button>
+  </section>
+
+  <!-- ===================== EDITOR VIEW ===================== -->
+  <section class="view hidden" id="viewEditor">
+    <header class="topbar">
+      <button class="icon-btn" id="editorBackBtn" aria-label="Back to notes"></button>
+      <input class="title-input" id="titleInput" placeholder="Untitled note" maxlength="120">
+      <button class="icon-btn danger" id="deleteNoteBtn" aria-label="Delete note"></button>
+    </header>
+
+    <div class="cmd-toolbar" id="cmdToolbar"></div>
+
+    <div class="editor-wrap">
+      <div class="editor-scroll">
+        <div id="editor" contenteditable="true" spellcheck="false"></div>
+      </div>
+      <div class="placeholder-overlay hidden" id="placeholderEl">Start typing, or tap the mic to dictate…</div>
+      <div class="hide-overlay hidden" id="hideOverlay">
+        <div class="pulse-dot"></div>
+        <p><strong>Transcribing…</strong><br>Text is hidden while you dictate.</p>
+        <button class="link-btn" id="hideOverlayShowBtn">Show text anyway</button>
+      </div>
+
+      <div class="sheet-backdrop" id="sheetBackdrop"></div>
+      <div class="recordings-sheet" id="recordingsSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3>Recordings</h3>
+          <button class="icon-btn small" id="recordingsCloseBtn" aria-label="Close"></button>
+        </div>
+        <div class="sheet-body" id="recordingsList"></div>
+      </div>
+
+      <div class="bottombar">
+        <div class="status-text" id="statusText">Tap the mic to start dictating</div>
+        <div class="bottombar-row">
+          <button class="side-btn" id="hideToggleBtn" aria-label="Hide text while transcribing"></button>
+          <div class="mic-wrap" id="micWrap">
+            <div class="waveform"><span></span><span></span><span></span><span></span><span></span></div>
+            <button class="mic-btn" id="micBtn" aria-label="Start voice dictation"></button>
+          </div>
+          <button class="side-btn" id="recordingsBtn" aria-label="Show recordings">
+            <span class="badge hidden" id="recordingsBadge">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SETTINGS VIEW ===================== -->
+  <section class="view hidden" id="viewSettings">
+    <header class="topbar">
+      <button class="icon-btn" id="settingsBackBtn" aria-label="Back to notes"></button>
+      <h1 class="app-title" style="font-size:17px;">Commands &amp; Settings</h1>
+    </header>
+    <div id="settingsScroll">
+      <div class="settings-section">
+        <h4>General</h4>
+        <div class="settings-card">
+          <div class="setting-row">
+            <div>
+              <div class="label-text">Hide text while transcribing</div>
+              <div class="desc-text">Only shows a "transcribing" indicator instead of the live text.</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="hideToggleSetting"><span class="switch-track"></span></label>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="label-text">Recording chunk length</div>
+              <div class="desc-text">Voice recordings are saved in clips of this length, in seconds.</div>
+            </div>
+            <input type="number" id="chunkSecondsInput" min="10" max="600" step="5">
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Voice commands</h4>
+        <div id="commandsList"></div>
+        <button class="text-btn" id="addCommandBtn"><span id="addCommandIcon"></span>Add command</button>
+        <div class="link-row"><button id="resetCommandsBtn">Reset commands to defaults</button></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===================== ICONS ===================== */
+const MIC_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>`;
+const BACK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+const PLUS_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+const PLUS_SMALL_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+const TRASH_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6h12z"></path></svg>`;
+const SETTINGS_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"></line><circle cx="14" cy="6" r="2.1" fill="var(--surface)"></circle><line x1="4" y1="12" x2="20" y2="12"></line><circle cx="8" cy="12" r="2.1" fill="var(--surface)"></circle><line x1="4" y1="18" x2="20" y2="18"></line><circle cx="16" cy="18" r="2.1" fill="var(--surface)"></circle></svg>`;
+const EYE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+const EYE_OFF_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle><line x1="2" y1="2" x2="22" y2="22"></line></svg>`;
+const REC_LIST_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="18" x2="6" y2="10"></line><line x1="12" y1="18" x2="12" y2="6"></line><line x1="18" y1="18" x2="18" y2="13"></line></svg>`;
+const CLOSE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>`;
+const CHEVRON_UP_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+const CHEVRON_DOWN_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+const MIC_EMPTY_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>`;
+
+/* ===================== DB LAYER ===================== */
+const DB_NAME='voicenote-db', DB_VERSION=1;
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded=(e)=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('notes')) db.createObjectStore('notes',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('recordings')){
+        const s=db.createObjectStore('recordings',{keyPath:'id'});
+        s.createIndex('by_noteId','noteId',{unique:false});
+      }
+      if(!db.objectStoreNames.contains('settings')) db.createObjectStore('settings',{keyPath:'key'});
+    };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+const dbPromise=openDB();
+async function idbPut(store,val){ const db=await dbPromise; return new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).put(val); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+async function idbGet(store,key){ const db=await dbPromise; return new Promise((res,rej)=>{ const tx=db.transaction(store,'readonly'); const r=tx.objectStore(store).get(key); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbGetAll(store){ const db=await dbPromise; return new Promise((res,rej)=>{ const tx=db.transaction(store,'readonly'); const r=tx.objectStore(store).getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbGetAllByIndex(store,idx,key){ const db=await dbPromise; return new Promise((res,rej)=>{ const tx=db.transaction(store,'readonly'); const r=tx.objectStore(store).index(idx).getAll(key); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbDelete(store,key){ const db=await dbPromise; return new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).delete(key); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+
+/* ===================== DEFAULT COMMANDS ===================== */
+const DEFAULT_COMMANDS=[
+  {id:'cmd-newline', trigger:'new line', type:'newline', label:'New line', showButton:true},
+  {id:'cmd-h1', trigger:'head head', type:'format', formatValue:'h1', label:'Title', showButton:true},
+  {id:'cmd-h2', trigger:'sub sub', type:'format', formatValue:'h2', label:'Subtitle', showButton:true},
+  {id:'cmd-foot', trigger:'foot foot', type:'format', formatValue:'footnote', label:'Footnote', showButton:true},
+  {id:'cmd-normal', trigger:'normal text', type:'format', formatValue:'normal', label:'Normal', showButton:true},
+  {id:'cmd-openb', trigger:'open bracket', type:'text', textValue:'(', label:'(', showButton:true},
+  {id:'cmd-closeb', trigger:'close bracket', type:'text', textValue:')', label:')', showButton:true},
+];
+
+/* ===================== STATE ===================== */
+const state={ commands:[], hideWhileDictating:false, chunkSeconds:60 };
+let currentNote=null;
+let dictationLineEl=null;
+let isListening=false;
+let recognition=null;
+let interimSpan=null;
+let mediaStream=null, mediaRecorder=null, chunkTimer=null;
+let recSeq=0;
+
+/* ===================== DOM REFS ===================== */
+const $=id=>document.getElementById(id);
+const viewList=$('viewList'), viewEditor=$('viewEditor'), viewSettings=$('viewSettings');
+const notesListEl=$('notesList'), emptyStateEl=$('emptyState');
+const editorEl=$('editor'), titleInputEl=$('titleInput'), placeholderEl=$('placeholderEl');
+const hideOverlayEl=$('hideOverlay'), toolbarEl=$('cmdToolbar');
+const micBtn=$('micBtn'), micWrap=$('micWrap'), statusTextEl=$('statusText');
+const hideToggleBtn=$('hideToggleBtn'), recordingsBtn=$('recordingsBtn'), recordingsBadge=$('recordingsBadge');
+const recordingsSheet=$('recordingsSheet'), recordingsListEl=$('recordingsList'), sheetBackdrop=$('sheetBackdrop');
+const commandsListEl=$('commandsList'), hideToggleSettingEl=$('hideToggleSetting'), chunkSecondsInputEl=$('chunkSecondsInput');
+const toastEl=$('toast');
+
+/* static icons */
+$('settingsBtn').innerHTML=SETTINGS_SVG;
+$('newNoteBtn').innerHTML=PLUS_SVG;
+$('editorBackBtn').innerHTML=BACK_SVG;
+$('deleteNoteBtn').innerHTML=TRASH_SVG;
+$('settingsBackBtn').innerHTML=BACK_SVG;
+$('recordingsCloseBtn').innerHTML=CLOSE_SVG;
+micBtn.innerHTML=MIC_SVG;
+recordingsBtn.querySelector('.badge').insertAdjacentHTML('beforebegin', REC_LIST_SVG);
+$('emptyState').querySelector('.glyph').innerHTML=MIC_EMPTY_SVG;
+$('addCommandIcon').innerHTML=PLUS_SMALL_SVG;
+
+/* ===================== HELPERS ===================== */
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+function formatDate(ts){
+  const d=new Date(ts), now=new Date();
+  if(d.toDateString()===now.toDateString()) return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString([],{month:'short',day:'numeric'})+' · '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+let toastTimer=null;
+function showToast(msg){
+  toastEl.textContent=msg; toastEl.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2600);
+}
+function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+/* ===================== SETTINGS ===================== */
+async function loadSettings(){
+  let commands=await idbGet('settings','commands');
+  if(!commands || !Array.isArray(commands.value) || !commands.value.length){
+    commands={key:'commands', value:DEFAULT_COMMANDS.map(c=>Object.assign({},c))};
+    await idbPut('settings',commands);
+  }
+  let hide=await idbGet('settings','hideWhileDictating');
+  if(!hide){ hide={key:'hideWhileDictating', value:false}; await idbPut('settings',hide); }
+  let chunk=await idbGet('settings','chunkSeconds');
+  if(!chunk){ chunk={key:'chunkSeconds', value:60}; await idbPut('settings',chunk); }
+  state.commands=commands.value;
+  state.hideWhileDictating=!!hide.value;
+  state.chunkSeconds=chunk.value||60;
+}
+
+/* ===================== VIEW SWITCHING ===================== */
+function showView(v){
+  [viewList,viewEditor,viewSettings].forEach(el=>el.classList.add('hidden'));
+  v.classList.remove('hidden');
+}
+function showListView(){ showView(viewList); renderNotesList(); }
+function showSettingsView(){ showView(viewSettings); renderSettingsView(); }
+
+/* ===================== NOTES LIST ===================== */
+async function renderNotesList(){
+  const notes=await idbGetAll('notes');
+  notes.sort((a,b)=>b.updatedAt-a.updatedAt);
+  notesListEl.innerHTML='';
+  if(!notes.length){ emptyStateEl.classList.remove('hidden'); return; }
+  emptyStateEl.classList.add('hidden');
+  notes.forEach(note=>{
+    const card=document.createElement('div');
+    card.className='note-card';
+    const tmp=document.createElement('div'); tmp.innerHTML=note.html||'';
+    const preview=(tmp.textContent||'').trim().slice(0,120) || 'No content yet';
+    card.innerHTML=`
+      <button class="icon-btn danger small note-delete" aria-label="Delete note" style="position:absolute;top:10px;right:10px;">${TRASH_SVG}</button>
+      <h3 class="note-title">${escapeHtml(note.title||'Untitled note')}</h3>
+      <p class="note-preview">${escapeHtml(preview)}</p>
+      <span class="note-date">${formatDate(note.updatedAt)}</span>`;
+    card.addEventListener('click',(e)=>{ if(!e.target.closest('.note-delete')) openNote(note.id); });
+    card.querySelector('.note-delete').addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      if(confirm('Delete this note and all its recordings? This cannot be undone.')){
+        await deleteNoteCompletely(note.id);
+        renderNotesList();
+        showToast('Note deleted');
+      }
+    });
+    notesListEl.appendChild(card);
+  });
+}
+async function deleteNoteCompletely(id){
+  const recs=await idbGetAllByIndex('recordings','by_noteId',id);
+  for(const r of recs) await idbDelete('recordings',r.id);
+  await idbDelete('notes',id);
+  if(currentNote && currentNote.id===id) currentNote=null;
+}
+$('newNoteBtn').addEventListener('click', async ()=>{
+  const note={ id:'note_'+Date.now()+'_'+Math.random().toString(36).slice(2), title:'', html:'', createdAt:Date.now(), updatedAt:Date.now() };
+  await idbPut('notes',note);
+  openNote(note.id);
+});
+$('settingsBtn').addEventListener('click', showSettingsView);
+$('settingsBackBtn').addEventListener('click', showListView);
+
+/* ===================== EDITOR CORE ===================== */
+function ensureEditorHasLine(){
+  if(!editorEl.firstElementChild){
+    const div=document.createElement('div');
+    div.className='line line-normal'; div.setAttribute('data-format','normal');
+    editorEl.appendChild(div);
+  }
+}
+function syncDictationLine(){ ensureEditorHasLine(); dictationLineEl=editorEl.lastElementChild; }
+function placeCaretAtEnd(el){
+  const range=document.createRange(); range.selectNodeContents(el); range.collapse(false);
+  const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+}
+function updatePlaceholderVisibility(){
+  const empty=editorEl.textContent.trim()==='';
+  placeholderEl.classList.toggle('hidden', !empty);
+}
+function appendTextSmart(el,text){
+  if(!text) return;
+  const existing=el.textContent;
+  let sep='';
+  if(existing && !/\s$/.test(existing) && !/^\s/.test(text)) sep=' ';
+  el.appendChild(document.createTextNode(sep+text));
+}
+
+async function openNote(id){
+  const note=await idbGet('notes',id);
+  if(!note){ showToast('Note not found'); return; }
+  if(isListening) stopListening();
+  currentNote=note;
+  editorEl.innerHTML=note.html||'';
+  ensureEditorHasLine();
+  syncDictationLine();
+  titleInputEl.value=note.title||'';
+  updatePlaceholderVisibility();
+  updateHideOverlay();
+  renderCommandToolbar();
+  renderRecordingsList();
+  statusTextEl.textContent='Tap the mic to start dictating';
+  showView(viewEditor);
+}
+
+$('editorBackBtn').addEventListener('click', async ()=>{
+  if(isListening) stopListening();
+  await saveCurrentNote();
+  currentNote=null;
+  showListView();
+});
+$('deleteNoteBtn').addEventListener('click', async ()=>{
+  if(!currentNote) return;
+  if(confirm('Delete this note and all its recordings? This cannot be undone.')){
+    if(isListening) stopListening();
+    await deleteNoteCompletely(currentNote.id);
+    showListView();
+    showToast('Note deleted');
+  }
+});
+
+let saveTimer=null;
+function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveCurrentNote,400); }
+async function saveCurrentNote(){
+  if(!currentNote) return;
+  currentNote.html=editorEl.innerHTML;
+  currentNote.updatedAt=Date.now();
+  await idbPut('notes',currentNote);
+}
+titleInputEl.addEventListener('input', ()=>{
+  if(!currentNote) return;
+  currentNote.title=titleInputEl.value;
+  clearTimeout(saveTimer); saveTimer=setTimeout(saveCurrentNote,400);
+});
+editorEl.addEventListener('input', ()=>{ updatePlaceholderVisibility(); scheduleSave(); });
+editorEl.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    syncDictationLine();
+    executeCommand({type:'newline'});
+    placeCaretAtEnd(dictationLineEl);
+    updatePlaceholderVisibility();
+    scheduleSave();
+  }
+});
+editorEl.addEventListener('focus', ()=>{ /* manual editing is native; dictationLineEl resynced before next programmatic use */ });
+
+/* ===================== COMMANDS ENGINE ===================== */
+function executeCommand(cmd){
+  syncDictationLine();
+  if(cmd.type==='newline'){
+    const div=document.createElement('div');
+    div.className='line line-normal'; div.setAttribute('data-format','normal');
+    editorEl.appendChild(div);
+    dictationLineEl=div;
+  } else if(cmd.type==='format'){
+    const fmt=cmd.formatValue||'normal';
+    if(dictationLineEl.textContent.trim()===''){
+      dictationLineEl.className='line line-'+fmt;
+      dictationLineEl.setAttribute('data-format',fmt);
+    } else {
+      const div=document.createElement('div');
+      div.className='line line-'+fmt; div.setAttribute('data-format',fmt);
+      editorEl.appendChild(div);
+      dictationLineEl=div;
     }
+  } else if(cmd.type==='text'){
+    appendTextSmart(dictationLineEl, cmd.textValue||'');
+  }
+  updatePlaceholderVisibility();
+}
+function buildCommandRegex(commands){
+  const triggers=commands.map(c=>c.trigger&&c.trigger.trim()).filter(Boolean);
+  if(!triggers.length) return null;
+  triggers.sort((a,b)=>b.length-a.length);
+  return new RegExp('\\b(?:'+triggers.map(escapeRegExp).join('|')+')\\b','gi');
+}
+function processTranscript(text){
+  if(!text) return;
+  const regex=buildCommandRegex(state.commands);
+  if(!regex){ appendTextSmart(dictationLineEl,text); return; }
+  let lastIndex=0, m;
+  regex.lastIndex=0;
+  while((m=regex.exec(text))!==null){
+    const before=text.slice(lastIndex,m.index).trim();
+    if(before) appendTextSmart(dictationLineEl,before);
+    const matched=m[0].toLowerCase();
+    const cmd=state.commands.find(c=>(c.trigger||'').trim().toLowerCase()===matched);
+    if(cmd) executeCommand(cmd);
+    lastIndex=regex.lastIndex;
+  }
+  const rest=text.slice(lastIndex).trim();
+  if(rest) appendTextSmart(dictationLineEl,rest);
+}
 
-    html,
-    body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--bg);
-        color: var(--text);
-        font-family:
-            Inter,
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            sans-serif;
+/* toolbar buttons */
+function renderCommandToolbar(){
+  toolbarEl.innerHTML='';
+  state.commands.filter(c=>c.showButton).forEach(cmd=>{
+    const btn=document.createElement('button');
+    btn.className='cmd-chip'; btn.type='button';
+    btn.textContent=cmd.label || cmd.trigger || '…';
+    btn.addEventListener('click', ()=>{
+      executeCommand(cmd); scheduleSave();
+      btn.classList.add('flash'); setTimeout(()=>btn.classList.remove('flash'),220);
+      editorEl.focus();
+      if(dictationLineEl) placeCaretAtEnd(dictationLineEl);
+    });
+    toolbarEl.appendChild(btn);
+  });
+}
+
+/* ===================== SPEECH RECOGNITION ===================== */
+function getRecognition(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR) return null;
+  const r=new SR();
+  r.continuous=true; r.interimResults=true;
+  r.lang=navigator.language||'en-US';
+  return r;
+}
+function removeInterim(){ if(interimSpan&&interimSpan.parentNode) interimSpan.parentNode.removeChild(interimSpan); interimSpan=null; }
+function showInterim(text){
+  removeInterim();
+  if(!text) return;
+  syncDictationLine();
+  interimSpan=document.createElement('span');
+  interimSpan.className='interim-text';
+  const existing=dictationLineEl.textContent;
+  const sep=(existing && !/\s$/.test(existing)) ? ' ' : '';
+  interimSpan.textContent=sep+text;
+  dictationLineEl.appendChild(interimSpan);
+}
+function handleRecognitionResult(event){
+  syncDictationLine();
+  removeInterim();
+  let interimText='';
+  const finals=[];
+  for(let i=event.resultIndex;i<event.results.length;i++){
+    const res=event.results[i];
+    if(res.isFinal) finals.push(res[0].transcript);
+    else interimText+=res[0].transcript;
+  }
+  finals.forEach(t=>processTranscript(t.trim()));
+  if(finals.length) scheduleSave();
+  showInterim(interimText);
+  updatePlaceholderVisibility();
+}
+function handleRecognitionEnd(){
+  if(isListening){
+    setTimeout(()=>{
+      if(!isListening||!recognition) return;
+      try{ recognition.start(); }catch(e){ /* ignore already-started */ }
+    },200);
+  }
+}
+function handleRecognitionError(e){
+  console.warn('Recognition error:',e.error);
+  if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+    showToast('Microphone permission denied');
+    stopListening();
+  }
+}
+function updateMicUI(){
+  micWrap.classList.toggle('listening', isListening);
+  micBtn.setAttribute('aria-label', isListening ? 'Stop voice dictation' : 'Start voice dictation');
+  statusTextEl.textContent = isListening
+    ? (state.hideWhileDictating ? 'Transcribing… tap the mic to stop' : 'Listening… tap the mic to stop')
+    : 'Tap the mic to start dictating';
+}
+function updateHideOverlay(){
+  const show=state.hideWhileDictating && isListening;
+  hideOverlayEl.classList.toggle('hidden', !show);
+}
+function startListening(){
+  if(!currentNote) return;
+  recognition=getRecognition();
+  if(!recognition){ showToast('Speech recognition is not supported in this browser'); return; }
+  recognition.onresult=handleRecognitionResult;
+  recognition.onerror=handleRecognitionError;
+  recognition.onend=handleRecognitionEnd;
+  isListening=true;
+  syncDictationLine();
+  updateMicUI(); updateHideOverlay();
+  try{ recognition.start(); }catch(e){ console.warn(e); }
+  startRecordingCycle(currentNote.id).catch(err=>{ console.warn('Recording unavailable',err); });
+}
+function stopListening(){
+  isListening=false;
+  removeInterim();
+  if(recognition){
+    recognition.onend=null;
+    try{ recognition.stop(); }catch(e){}
+    recognition=null;
+  }
+  stopRecordingCycle();
+  updateMicUI(); updateHideOverlay();
+  scheduleSave();
+}
+micBtn.addEventListener('click', ()=>{ isListening?stopListening():startListening(); });
+
+/* ===================== AUDIO RECORDING (chunked) ===================== */
+async function startRecordingCycle(noteId){
+  mediaStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  startNewChunk(noteId);
+}
+function startNewChunk(noteId){
+  if(!mediaStream) return;
+  let options={};
+  if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/webm')) options={mimeType:'audio/webm'};
+  try{ mediaRecorder=new MediaRecorder(mediaStream,options); }
+  catch(e){ mediaRecorder=new MediaRecorder(mediaStream); }
+  const localChunks=[];
+  mediaRecorder.ondataavailable=(e)=>{ if(e.data && e.data.size>0) localChunks.push(e.data); };
+  mediaRecorder.onstop=async ()=>{
+    if(localChunks.length){
+      const blob=new Blob(localChunks,{type:mediaRecorder.mimeType||'audio/webm'});
+      await saveRecording(noteId,blob);
     }
+    if(isListening && mediaStream) startNewChunk(noteId);
+  };
+  mediaRecorder.start();
+  clearTimeout(chunkTimer);
+  chunkTimer=setTimeout(()=>{
+    if(mediaRecorder && mediaRecorder.state!=='inactive') mediaRecorder.stop();
+  }, (state.chunkSeconds||60)*1000);
+}
+function stopRecordingCycle(){
+  clearTimeout(chunkTimer);
+  if(mediaRecorder && mediaRecorder.state!=='inactive'){
+    try{ mediaRecorder.stop(); }catch(e){}
+  }
+  mediaRecorder=null;
+  if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
+}
+async function saveRecording(noteId,blob){
+  recSeq+=1;
+  const rec={ id:'rec_'+Date.now()+'_'+Math.random().toString(36).slice(2), noteId, blob, createdAt:Date.now(), seq:recSeq };
+  await idbPut('recordings',rec);
+  if(currentNote && currentNote.id===noteId) renderRecordingsList();
+}
 
-    body {
-        overflow: hidden;
-    }
+/* recordings sheet */
+async function renderRecordingsList(){
+  if(!currentNote) return;
+  const recs=await idbGetAllByIndex('recordings','by_noteId',currentNote.id);
+  recs.sort((a,b)=>a.createdAt-b.createdAt);
+  recordingsListEl.innerHTML='';
+  if(!recs.length){
+    recordingsBadge.classList.add('hidden');
+    recordingsListEl.innerHTML='<p class="empty-hint">No recordings yet for this note. Start dictating to capture audio.</p>';
+    return;
+  }
+  recordingsBadge.textContent=String(recs.length);
+  recordingsBadge.classList.remove('hidden');
+  recs.forEach((rec,idx)=>{
+    const url=URL.createObjectURL(rec.blob);
+    const row=document.createElement('div');
+    row.className='recording-row';
+    row.innerHTML=`
+      <div class="recording-meta"><span class="recording-index">Clip ${idx+1}</span><span>${formatDate(rec.createdAt)}</span></div>
+      <audio controls src="${url}"></audio>
+      <div class="recording-actions"><button class="icon-btn small danger rec-del">${TRASH_SVG}</button></div>`;
+    row.querySelector('.rec-del').addEventListener('click', async ()=>{
+      if(confirm('Delete this recording?')){
+        await idbDelete('recordings',rec.id);
+        renderRecordingsList();
+      }
+    });
+    recordingsListEl.appendChild(row);
+  });
+}
+recordingsBtn.addEventListener('click', ()=>{
+  const opening=!recordingsSheet.classList.contains('open');
+  recordingsSheet.classList.toggle('open',opening);
+  sheetBackdrop.classList.toggle('show',opening);
+  if(opening) renderRecordingsList();
+});
+$('recordingsCloseBtn').addEventListener('click', ()=>{ recordingsSheet.classList.remove('open'); sheetBackdrop.classList.remove('show'); });
+sheetBackdrop.addEventListener('click', ()=>{ recordingsSheet.classList.remove('open'); sheetBackdrop.classList.remove('show'); });
 
-    button,
-    input,
-    select,
-    textarea {
-        font: inherit;
-    }
+/* ===================== HIDE-WHILE-DICTATING TOGGLE ===================== */
+function applyHideToggleUI(){
+  hideToggleBtn.innerHTML = state.hideWhileDictating ? EYE_OFF_SVG : EYE_SVG;
+  hideToggleBtn.classList.toggle('active', state.hideWhileDictating);
+  hideToggleBtn.setAttribute('aria-label', state.hideWhileDictating ? 'Text hidden while transcribing — tap to show' : 'Hide text while transcribing');
+  if(hideToggleSettingEl) hideToggleSettingEl.checked=state.hideWhileDictating;
+  updateMicUI();
+}
+hideToggleBtn.addEventListener('click', async ()=>{
+  state.hideWhileDictating=!state.hideWhileDictating;
+  applyHideToggleUI(); updateHideOverlay();
+  await idbPut('settings',{key:'hideWhileDictating', value:state.hideWhileDictating});
+});
+$('hideOverlayShowBtn').addEventListener('click', async ()=>{
+  state.hideWhileDictating=false;
+  applyHideToggleUI(); updateHideOverlay();
+  await idbPut('settings',{key:'hideWhileDictating', value:false});
+});
 
-    button {
-        border: 0;
-        cursor: pointer;
-    }
+/* ===================== SETTINGS VIEW ===================== */
+function renderSettingsView(){
+  hideToggleSettingEl.checked=state.hideWhileDictating;
+  chunkSecondsInputEl.value=state.chunkSeconds;
+  renderCommandsList();
+}
+hideToggleSettingEl.addEventListener('change', async ()=>{
+  state.hideWhileDictating=hideToggleSettingEl.checked;
+  applyHideToggleUI(); updateHideOverlay();
+  await idbPut('settings',{key:'hideWhileDictating', value:state.hideWhileDictating});
+});
+chunkSecondsInputEl.addEventListener('change', async ()=>{
+  let v=parseInt(chunkSecondsInputEl.value,10);
+  if(isNaN(v)||v<10) v=10;
+  if(v>600) v=600;
+  chunkSecondsInputEl.value=v;
+  state.chunkSeconds=v;
+  await idbPut('settings',{key:'chunkSeconds', value:v});
+});
 
-    .app {
-        display: flex;
-        width: 100%;
-        height: 100dvh;
-        overflow: hidden;
-    }
+function renderCommandsList(){
+  commandsListEl.innerHTML='';
+  state.commands.forEach((cmd,idx)=>{ commandsListEl.appendChild(buildCommandCard(cmd,idx)); });
+}
+let persistTimer=null;
+function persistCommands(rerenderList){
+  clearTimeout(persistTimer);
+  persistTimer=setTimeout(async ()=>{ await idbPut('settings',{key:'commands', value:state.commands}); },300);
+  if(rerenderList) renderCommandsList();
+  renderCommandToolbar();
+}
+function buildCommandCard(cmd, idx){
+  const card=document.createElement('div'); card.className='command-card';
 
-    /* ---------------------------------------------------------
-       SIDEBAR
-    --------------------------------------------------------- */
+  const row1=document.createElement('div'); row1.className='command-row';
+  const l1=document.createElement('label'); l1.textContent='When I say';
+  const triggerInput=document.createElement('input'); triggerInput.type='text'; triggerInput.placeholder='e.g. new line'; triggerInput.value=cmd.trigger||'';
+  triggerInput.addEventListener('input', ()=>{ cmd.trigger=triggerInput.value; persistCommands(false); });
+  row1.append(l1,triggerInput);
 
-    .sidebar {
-        width: 280px;
-        flex-shrink: 0;
-        background: var(--surface);
-        border-right: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        z-index: 20;
-    }
+  const row2=document.createElement('div'); row2.className='command-row';
+  const l2=document.createElement('label'); l2.textContent='Action';
+  const typeSelect=document.createElement('select');
+  [['newline','Insert a new line'],['format:h1','Format as title'],['format:h2','Format as subtitle'],
+   ['format:footnote','Format as footnote'],['format:normal','Format as normal text'],['text','Insert custom text']]
+   .forEach(([val,label])=>{ const o=document.createElement('option'); o.value=val; o.textContent=label; typeSelect.appendChild(o); });
+  typeSelect.value = cmd.type==='format' ? ('format:'+(cmd.formatValue||'normal')) : cmd.type;
+  row2.append(l2,typeSelect);
 
-    .sidebar-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 18px 16px;
-        border-bottom: 1px solid var(--border);
-    }
+  const row3=document.createElement('div'); row3.className='command-row';
+  const l3=document.createElement('label'); l3.textContent='Insert this text';
+  const textInput=document.createElement('input'); textInput.type='text'; textInput.placeholder='e.g. ('; textInput.value=cmd.textValue||'';
+  row3.append(l3,textInput);
+  row3.classList.toggle('hidden', cmd.type!=='text');
+  textInput.addEventListener('input', ()=>{ cmd.textValue=textInput.value; persistCommands(false); });
 
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 700;
-        font-size: 17px;
-    }
+  typeSelect.addEventListener('change', ()=>{
+    const val=typeSelect.value;
+    if(val.startsWith('format:')){ cmd.type='format'; cmd.formatValue=val.split(':')[1]; }
+    else { cmd.type=val; if(val!=='text') delete cmd.formatValue; }
+    row3.classList.toggle('hidden', cmd.type!=='text');
+    persistCommands(false);
+  });
 
-    .logo-icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        display: grid;
-        place-items: center;
-        background: var(--accent);
-        color: #160b20;
-        font-size: 18px;
-    }
+  const row4=document.createElement('div'); row4.className='command-row';
+  const l4=document.createElement('label'); l4.textContent='Button label';
+  const labelInput=document.createElement('input'); labelInput.type='text'; labelInput.placeholder='e.g. Title'; labelInput.value=cmd.label||'';
+  labelInput.addEventListener('input', ()=>{ cmd.label=labelInput.value; persistCommands(false); });
+  row4.append(l4,labelInput);
 
-    .new-note-button {
-        width: 38px;
-        height: 38px;
-        border-radius: 11px;
-        background: var(--surface-3);
-        color: var(--text);
-        font-size: 23px;
-    }
+  const row5=document.createElement('div'); row5.className='command-row command-row-actions';
+  const switchWrap=document.createElement('div'); switchWrap.className='switch-wrap';
+  const switchLabel=document.createElement('label'); switchLabel.className='switch small';
+  const switchInput=document.createElement('input'); switchInput.type='checkbox'; switchInput.checked=!!cmd.showButton;
+  const switchTrack=document.createElement('span'); switchTrack.className='switch-track';
+  switchInput.addEventListener('change', ()=>{ cmd.showButton=switchInput.checked; persistCommands(false); });
+  switchLabel.append(switchInput,switchTrack);
+  const switchCaption=document.createElement('span'); switchCaption.className='switch-caption'; switchCaption.textContent='Show as button';
+  switchWrap.append(switchLabel,switchCaption);
 
-    .new-note-button:active {
-        transform: scale(.95);
-    }
+  const btnGroup=document.createElement('div'); btnGroup.className='command-btn-group';
+  const upBtn=document.createElement('button'); upBtn.className='icon-btn small'; upBtn.innerHTML=CHEVRON_UP_SVG; upBtn.disabled=(idx===0);
+  upBtn.addEventListener('click', ()=>moveCommand(idx,-1));
+  const downBtn=document.createElement('button'); downBtn.className='icon-btn small'; downBtn.innerHTML=CHEVRON_DOWN_SVG; downBtn.disabled=(idx===state.commands.length-1);
+  downBtn.addEventListener('click', ()=>moveCommand(idx,1));
+  const delBtn=document.createElement('button'); delBtn.className='icon-btn small danger'; delBtn.innerHTML=TRASH_SVG;
+  delBtn.addEventListener('click', ()=>{
+    if(confirm('Delete this command?')){ state.commands.splice(idx,1); persistCommands(true); }
+  });
+  btnGroup.append(upBtn,downBtn,delBtn);
+  row5.append(switchWrap,btnGroup);
 
-    .notes-list {
-        flex: 1;
-        overflow-y: auto;
-        padding: 10px;
-    }
+  card.append(row1,row2,row3,row4,row5);
+  return card;
+}
+function moveCommand(idx,dir){
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=state.commands.length) return;
+  const arr=state.commands;
+  const tmp=arr[idx]; arr[idx]=arr[newIdx]; arr[newIdx]=tmp;
+  persistCommands(true);
+}
+$('addCommandBtn').addEventListener('click', ()=>{
+  state.commands.push({ id:'cmd_'+Date.now(), trigger:'', type:'text', textValue:'', label:'New command', showButton:false });
+  persistCommands(true);
+});
+$('resetCommandsBtn').addEventListener('click', ()=>{
+  if(confirm('Reset all voice commands to defaults? Custom commands will be removed.')){
+    state.commands=DEFAULT_COMMANDS.map(c=>Object.assign({},c));
+    persistCommands(true);
+  }
+});
 
-    .note-item {
-        padding: 13px;
-        margin-bottom: 5px;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: background .15s;
-    }
+/* ===================== INIT ===================== */
+async function init(){
+  await loadSettings();
+  applyHideToggleUI();
+  showListView();
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('SW registration failed',err));
+    });
+  }
+}
+init();
 
-    .note-item:hover {
-        background: var(--surface-2);
-    }
-
-    .note-item.active {
-        background: var(--surface-3);
-    }
-
-    .note-item-title {
-        font-size: 14px;
-        font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .note-item-date {
-        color: var(--muted);
-        font-size: 11px;
-        margin-top: 5px;
-    }
-
-    .sidebar-bottom {
-        border-top: 1px solid var(--border);
-        padding: 10px;
-        padding-bottom: calc(10px + var(--safe-bottom));
-    }
-
-    .sidebar-button {
-        width: 100%;
-        background: transparent;
-        color: var(--muted);
-        padding: 12px;
-        border-radius: 10px;
-        text-align: left;
-    }
-
-    .sidebar-button:hover {
-        background: var(--surface-2);
-        color: var(--text);
-    }
-
-    /* ---------------------------------------------------------
-       MAIN
-    --------------------------------------------------------- */
-
-    .main {
-        min-width: 0;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .topbar {
-        height: 62px;
-        flex-shrink: 0;
-        border-bottom: 1px solid var(--border);
-        background: rgba(13, 14, 16, .92);
-        backdrop-filter: blur(18px);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 14px;
-        z-index: 10;
-    }
-
-    .mobile-menu {
-        display: none;
-    }
-
-    .note-title {
-        min-width: 0;
-        flex: 1;
-        background: transparent;
-        border: 0;
-        outline: none;
-        color: var(--text);
-        font-size: 17px;
-        font-weight: 650;
-    }
-
-    .save-status {
-        color: var(--muted);
-        font-size: 11px;
-        white-space: nowrap;
-    }
-
-    .icon-button {
-        width: 40px;
-        height: 40px;
-        border-radius: 11px;
-        background: transparent;
-        color: var(--muted);
-        font-size: 19px;
-    }
-
-    .icon-button:hover {
-        background: var(--surface-2);
-        color: var(--text);
-    }
-
-    .content {
-        flex: 1;
-        min-height: 0;
-        overflow-y: auto;
-        position: relative;
-    }
-
-    .editor-wrapper {
-        width: min(900px, 100%);
-        margin: 0 auto;
-        padding: 24px 20px 210px;
-    }
-
-    #editor {
-        min-height: calc(100dvh - 130px);
-        outline: none;
-        font-size: 18px;
-        line-height: 1.65;
-        color: var(--text);
-        overflow-wrap: anywhere;
-        caret-color: var(--accent);
-    }
-
-    #editor:empty::before {
-        content: "Start writing or tap the microphone…";
-        color: #565c64;
-        pointer-events: none;
-    }
-
-    #editor p,
-    #editor div {
-        margin: 0 0 .6em;
-    }
-
-    #editor h1 {
-        font-size: 30px;
-        line-height: 1.25;
-        margin: .8em 0 .4em;
-    }
-
-    #editor h2 {
-        font-size: 23px;
-        line-height: 1.3;
-        margin: .7em 0 .35em;
-    }
-
-    #editor .footnote {
-        color: var(--muted);
-        font-size: 14px;
-        line-height: 1.5;
-    }
-
-    .interim {
-        color: #8d8497;
-        opacity: .85;
-    }
-
-    /* ---------------------------------------------------------
-       VOICE AREA
-    --------------------------------------------------------- */
-
-    .voice-panel {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        padding: 10px 12px calc(12px + var(--safe-bottom));
-        background:
-            linear-gradient(
-                to bottom,
-                transparent,
-                rgba(13, 14, 16, .96) 24%
-            );
-        pointer-events: none;
-    }
-
-    .voice-inner {
-        width: min(900px, 100%);
-        margin: 0 auto;
-        pointer-events: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .shortcut-bar {
-        display: flex;
-        gap: 7px;
-        overflow-x: auto;
-        padding: 4px 2px;
-        scrollbar-width: none;
-    }
-
-    .shortcut-bar::-webkit-scrollbar {
-        display: none;
-    }
-
-    .shortcut-button {
-        flex: 0 0 auto;
-        background: rgba(36, 40, 45, .96);
-        border: 1px solid var(--border);
-        color: var(--text);
-        border-radius: 10px;
-        padding: 8px 12px;
-        font-size: 12px;
-        white-space: nowrap;
-    }
-
-    .shortcut-button:active {
-        transform: scale(.96);
-    }
-
-    .voice-row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 13px;
-    }
-
-    .recording-info {
-        min-width: 100px;
-        color: var(--muted);
-        font-size: 11px;
-        text-align: right;
-    }
-
-    .mic-button {
-        width: 68px;
-        height: 68px;
-        border-radius: 50%;
-        background: var(--accent);
-        color: #160b20;
-        display: grid;
-        place-items: center;
-        font-size: 27px;
-        box-shadow: 0 6px 30px rgba(187, 134, 252, .20);
-        transition: transform .15s, background .2s, box-shadow .2s;
-        position: relative;
-    }
-
-    .mic-button:active {
-        transform: scale(.94);
-    }
-
-    .mic-button.listening {
-        background: var(--danger);
-        color: white;
-        box-shadow:
-            0 0 0 7px rgba(255, 102, 112, .10),
-            0 0 35px rgba(255, 102, 112, .25);
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            box-shadow:
-                0 0 0 6px rgba(255, 102, 112, .08),
-                0 0 30px rgba(255, 102, 112, .18);
-        }
-
-        50% {
-            box-shadow:
-                0 0 0 13px rgba(255, 102, 112, .04),
-                0 0 38px rgba(255, 102, 112, .24);
-        }
-    }
-
-    .mic-status {
-        min-width: 100px;
-        color: var(--muted);
-        font-size: 11px;
-        text-align: left;
-    }
-
-    .mic-status.active {
-        color: var(--danger);
-    }
-
-    /* ---------------------------------------------------------
-       MODALS
-    --------------------------------------------------------- */
-
-    .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, .65);
-        backdrop-filter: blur(8px);
-        display: none;
-        align-items: flex-end;
-        justify-content: center;
-        z-index: 100;
-    }
-
-    .modal-backdrop.open {
-        display: flex;
-    }
-
-    .modal {
-        width: min(720px, 100%);
-        max-height: 92dvh;
-        overflow-y: auto;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-bottom: 0;
-        border-radius: 22px 22px 0 0;
-        padding: 20px;
-        padding-bottom: calc(20px + var(--safe-bottom));
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .modal-header h2 {
-        margin: 0;
-        font-size: 20px;
-    }
-
-    .close-button {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: var(--surface-3);
+})();
+</script>
+</body>
+</html>--surface-3);
         color: var(--muted);
         font-size: 20px;
     }
