@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
     <title>VoiceNote Pro</title>
+
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
+
     <style>
         :root {
             --bg-color: #121212;
@@ -18,154 +20,3093 @@
             --border: #333;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+        }
 
-        /* Header */
+        body {
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* =========================================================
+           HEADER
+        ========================================================= */
+
         header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; background-color: var(--surface-color); border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border);
         }
-        header h1 { font-size: 1.2rem; font-weight: 600; color: var(--primary-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
-        .header-actions { display: flex; gap: 5px; }
+
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 50%;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 5px;
+        }
+
         .icon-btn {
-            background: none; border: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; 
-            padding: 8px; border-radius: 50%; transition: background 0.2s; display: flex; align-items: center; justify-content: center;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
-        .icon-btn:hover { background: rgba(255,255,255,0.1); }
 
-        /* Main Editor */
-        #main-area { flex-grow: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; }
-        
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .icon-btn:active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* =========================================================
+           MAIN EDITOR
+        ========================================================= */
+
+        #main-area {
+            flex: 1 1 auto;
+            min-height: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
         #editor {
-            flex-grow: 1; padding: 20px; overflow-y: auto; font-size: 1.1rem; line-height: 1.6; outline: none;
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            outline: none;
+            word-break: break-word;
         }
-        #editor h1 { font-size: 1.8rem; margin: 10px 0; color: var(--primary-color); font-weight: bold; }
-        #editor h2 { font-size: 1.4rem; margin: 8px 0; color: var(--text-main); font-weight: bold; }
-        #editor h6 { font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin: 5px 0; }
-        #editor div, #editor p { margin-bottom: 10px; font-size: 1.1rem; font-weight: normal; }
-        #editor:empty:before { content: attr(placeholder); color: var(--text-muted); }
 
-        /* Hidden Mode Overlay */
+        #editor h1 {
+            font-size: 1.8rem;
+            margin: 10px 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        #editor h2 {
+            font-size: 1.4rem;
+            margin: 8px 0;
+            color: var(--text-main);
+            font-weight: bold;
+        }
+
+        #editor h6 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: normal;
+            margin: 5px 0;
+        }
+
+        #editor div,
+        #editor p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: normal;
+        }
+
+        #editor:empty:before {
+            content: attr(placeholder);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* =========================================================
+           HIDDEN MODE
+        ========================================================= */
+
         #hidden-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); display: none; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 10;
+            position: absolute;
+            inset: 0;
+            background: var(--bg-color);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
         }
+
         .pulse-ring {
-            width: 100px; height: 100px; border-radius: 50%; background: rgba(187, 134, 252, 0.2);
-            animation: pulse 1.5s infinite ease-in-out; display: flex; justify-content: center; align-items: center;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(187, 134, 252, 0.2);
+            animation: pulse 1.5s infinite ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        @keyframes pulse { 0% { transform: scale(0.8); opacity: 0.5; } 100% { transform: scale(1.5); opacity: 0; } }
 
-        /* Interim Results */
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* =========================================================
+           INTERIM SPEECH
+        ========================================================= */
+
         #interim-text {
-            position: absolute; bottom: 80px; left: 20px; right: 20px;
-            background: rgba(30, 30, 30, 0.9); padding: 10px; border-radius: 8px;
-            font-size: 0.9rem; color: var(--primary-color); font-style: italic; display: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: none; z-index: 5;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            font-style: italic;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            pointer-events: none;
+            z-index: 5;
         }
 
-        /* Controls Footer */
-        footer { background-color: var(--surface-color); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
-        
+        /* =========================================================
+           FOOTER
+        ========================================================= */
+
+        footer {
+            flex-shrink: 0;
+            background-color: var(--surface-color);
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
         #shortcut-bar {
-            display: flex; overflow-x: auto; padding: 10px; gap: 10px; border-bottom: 1px solid var(--border); scrollbar-width: none;
+            display: flex;
+            overflow-x: auto;
+            padding: 10px;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            scrollbar-width: none;
+            min-height: 52px;
         }
-        #shortcut-bar::-webkit-scrollbar { display: none; }
-        .shortcut-chip {
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--text-main); 
-            padding: 8px 14px; border-radius: 20px; white-space: nowrap; cursor: pointer; font-size: 0.9rem; user-select: none;
-        }
-        .shortcut-chip:active { background: var(--primary-color); color: var(--bg-color); }
 
-        .action-bar { display: flex; justify-content: center; align-items: center; padding: 10px; position: relative; height: 80px; }
-        
-        .action-bar .left-btn { position: absolute; left: 20px; }
+        #shortcut-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .shortcut-chip {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 0.9rem;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .shortcut-chip:active {
+            background: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+            height: 80px;
+        }
+
+        .action-bar .left-btn {
+            position: absolute;
+            left: 20px;
+        }
 
         #mic-btn {
-            width: 60px; height: 60px; border-radius: 50%; background: var(--primary-color); border: none; color: var(--bg-color); 
-            cursor: pointer; box-shadow: 0 4px 10px rgba(187, 134, 252, 0.4); display: flex; align-items: center; justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: none;
+            color: var(--bg-color);
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(187, 134, 252, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
         }
-        #mic-btn.listening { background: var(--error); box-shadow: 0 4px 10px rgba(207, 102, 121, 0.4); animation: breathe 2s infinite; }
-        @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* Modals */
+        #mic-btn.listening {
+            background: var(--error);
+            box-shadow: 0 4px 10px rgba(207, 102, 121, 0.4);
+            animation: breathe 2s infinite;
+        }
+
+        #mic-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        @keyframes breathe {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* =========================================================
+           MODALS
+        ========================================================= */
+
         .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); z-index: 100; display: none; flex-direction: column;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            background: var(--bg-color);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border); }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding: 20px; }
-        
-        /* Modal Items & Settings */
-        .list-item { background: var(--surface-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        .list-item input, .list-item select {
-            width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 10px;
-            background: var(--bg-color); border: 1px solid var(--border); color: white; border-radius: 4px; font-size: 1rem;
+
+        .modal-header {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
         }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .btn { padding: 10px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-primary { background: var(--primary-color); color: var(--bg-color); }
-        .btn-danger { background: var(--error); color: white; }
-        .btn-secondary { background: #333; color: white; }
-        
-        .recording-item { display: flex; flex-direction: column; gap: 10px; }
-        .recording-item audio { width: 100%; height: 40px; outline: none; }
-        
-        .svg-icon { width: 24px; height: 24px; fill: currentColor; }
-        .svg-small { width: 18px; height: 18px; fill: currentColor; }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .modal-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px;
+        }
+
+        .modal-footer {
+            flex-shrink: 0;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* =========================================================
+           MODAL ITEMS / SETTINGS
+        ========================================================= */
+
+        .list-item {
+            background: var(--surface-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .list-item input,
+        .list-item select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: white;
+        }
+
+        .recording-item {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .recording-item audio {
+            width: 100%;
+            height: 40px;
+            outline: none;
+        }
+
+        .svg-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .svg-small {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Speech status in settings */
+        #speech-status {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        #speech-status.ok {
+            color: #8bc34a;
+        }
+
+        #speech-status.error {
+            color: var(--error);
+        }
     </style>
 </head>
+
 <body>
+
+    <!-- =========================================================
+         HEADER
+    ========================================================= -->
 
     <header>
         <h1 id="active-note-title">VoiceNote Pro</h1>
+
         <div class="header-actions">
-            <button class="icon-btn" onclick="openModal('notes-modal')" title="Notes">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 18h12v-2H3v2zM3 6v2h18V6H3zm0 7h18v-2H3v2z"/></svg>
+
+            <button class="icon-btn"
+                    type="button"
+                    onclick="openModal('notes-modal')"
+                    title="Notes"
+                    aria-label="Notes">
+
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M3 18h12v-2H3v2zM3 6v2h18V6H3zm0 7h18v-2H3v2z"/>
+                </svg>
+
             </button>
-            <button class="icon-btn" onclick="openModal('recordings-modal')" title="Recordings">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+
+            <button class="icon-btn"
+                    type="button"
+                    onclick="openModal('recordings-modal')"
+                    title="Recordings"
+                    aria-label="Recordings">
+
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                </svg>
+
             </button>
-            <button class="icon-btn" onclick="openModal('settings-modal')" title="Settings">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.73 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+
+            <button class="icon-btn"
+                    type="button"
+                    onclick="openModal('settings-modal')"
+                    title="Settings"
+                    aria-label="Settings">
+
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.73 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5-.38 1.03-.7 1.62-.94l.36 2.54c.04.24.24.41.48.41h3.84c.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                </svg>
+
             </button>
+
         </div>
     </header>
 
+
+    <!-- =========================================================
+         MAIN AREA
+    ========================================================= -->
+
     <div id="main-area">
-        <div id="editor" contenteditable="true" placeholder="Start typing or recording..."></div>
-        
+
+        <div id="editor"
+             contenteditable="true"
+             spellcheck="true"
+             placeholder="Start typing or recording..."></div>
+
         <div id="hidden-overlay">
+
             <div class="pulse-ring">
-                <svg class="svg-icon" style="color: var(--primary-color); width: 40px; height: 40px;" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+
+                <svg class="svg-icon"
+                     style="color: var(--primary-color); width: 40px; height: 40px;"
+                     viewBox="0 0 24 24">
+
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+
+                </svg>
+
             </div>
-            <p style="margin-top: 20px; color: var(--primary-color);">Transcribing in background...</p>
+
+            <p style="margin-top: 20px; color: var(--primary-color);">
+                Transcribing in background...
+            </p>
+
         </div>
 
         <div id="interim-text"></div>
+
     </div>
 
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================= -->
+
     <footer>
+
         <div id="shortcut-bar"></div>
+
         <div class="action-bar">
-            <button class="icon-btn left-btn" onclick="toggleVisibility()">
-                <svg class="svg-icon" id="eye-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+
+            <button class="icon-btn left-btn"
+                    type="button"
+                    onclick="toggleVisibility()"
+                    title="Toggle visibility"
+                    aria-label="Toggle visibility">
+
+                <svg class="svg-icon"
+                     id="eye-icon"
+                     viewBox="0 0 24 24">
+
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+
+                </svg>
+
             </button>
-            
-            <button id="mic-btn" onclick="toggleMic()">
-                <svg class="svg-icon" style="color:var(--bg-color);" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+
+
+            <button id="mic-btn"
+                    type="button"
+                    onclick="toggleMic()"
+                    aria-label="Start voice transcription">
+
+                <svg class="svg-icon"
+                     style="color: var(--bg-color);"
+                     viewBox="0 0 24 24">
+
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+
+                </svg>
+
             </button>
+
         </div>
+
     </footer>
 
-    <!-- Notes Modal -->
+
+    <!-- =========================================================
+         NOTES MODAL
+    ========================================================= -->
+
     <div id="notes-modal" class="modal">
+
         <div class="modal-header">
+
             <h2>My Notes</h2>
-            <button class="icon-btn" onclick="closeModal('notes-modal')">
+
+            <button class="icon-btn"
+                    type="button"
+                    onclick="closeModal('notes-modal')"
+                    aria-label="Close">
+
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+
+            </button>
+
+        </div>
+
+        <div class="modal-body" id="notes-list"></div>
+
+        <div class="modal-footer">
+
+            <button class="btn btn-primary"
+                    type="button"
+                    style="width: 100%;"
+                    onclick="createNewNote()">
+
+                + Create New Note
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         SETTINGS MODAL
+    ========================================================= -->
+
+    <div id="settings-modal" class="modal">
+
+        <div class="modal-header">
+
+            <h2>Settings & Commands</h2>
+
+            <button class="icon-btn"
+                    type="button"
+                    onclick="closeModal('settings-modal')"
+                    aria-label="Close">
+
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div class="list-item">
+
+                <label style="color: var(--primary-color); font-weight: bold;">
+                    Speech Language
+                </label>
+
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+                    Select the language you are speaking.
+                </p>
+
+                <select id="lang-select"
+                        onchange="changeLanguage(this.value)">
+
+                    <option value="en-US">English (US)</option>
+                    <option value="en-GB">English (UK)</option>
+                    <option value="de-DE">German (Deutsch)</option>
+                    <option value="fr-FR">French (Français)</option>
+                    <option value="it-IT">Italian (Italiano)</option>
+
+                </select>
+
+                <div id="speech-status">
+                    Speech recognition is ready.
+                </div>
+
+            </div>
+
+
+            <h3 style="margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
+                Shortcuts
+            </h3>
+
+            <div id="settings-list"></div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button class="btn btn-secondary"
+                    type="button"
+                    style="width: 100%;"
+                    onclick="addNewShortcut()">
+
+                + Add New Command
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         RECORDINGS MODAL
+    ========================================================= -->
+
+    <div id="recordings-modal" class="modal">
+
+        <div class="modal-header">
+
+            <h2>Saved Recordings</h2>
+
+            <button class="icon-btn"
+                    type="button"
+                    onclick="closeModal('recordings-modal')"
+                    aria-label="Close">
+
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+
+            </button>
+
+        </div>
+
+        <div class="modal-body" id="recordings-list"></div>
+
+    </div>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================= -->
+
+    <script>
+
+        /* =========================================================
+           CORE STATE
+        ========================================================= */
+
+        let isListening = false;
+        let isHidden = false;
+
+        let recognition = null;
+
+        let recognitionRunning = false;
+        let recognitionStartPending = false;
+        let manuallyStopping = false;
+        let restartTimer = null;
+
+        let db;
+
+        const editor = document.getElementById('editor');
+        const interimDisplay = document.getElementById('interim-text');
+        const micButton = document.getElementById('mic-btn');
+        const speechStatus = document.getElementById('speech-status');
+
+        let savedCaretRange = null;
+
+
+        /* =========================================================
+           DATA
+        ========================================================= */
+
+        let notes =
+            JSON.parse(localStorage.getItem('voicenote_notes')) || [];
+
+        let activeNoteId =
+            localStorage.getItem('voicenote_active_id');
+
+        let currentLang =
+            localStorage.getItem('voicenote_lang') || 'en-US';
+
+
+        const DEFAULT_SHORTCUTS = [
+
+            {
+                id: 1,
+                phrase: "new line",
+                type: "action",
+                action: "newline",
+                showButton: true,
+                order: 1
+            },
+
+            {
+                id: 2,
+                phrase: "head head",
+                type: "action",
+                action: "h1",
+                showButton: true,
+                order: 2
+            },
+
+            {
+                id: 3,
+                phrase: "sub sub",
+                type: "action",
+                action: "h2",
+                showButton: true,
+                order: 3
+            },
+
+            {
+                id: 4,
+                phrase: "foot foot",
+                type: "action",
+                action: "footnote",
+                showButton: true,
+                order: 4
+            },
+
+            {
+                id: 5,
+                phrase: "normal text",
+                type: "action",
+                action: "normal",
+                showButton: true,
+                order: 5
+            },
+
+            {
+                id: 6,
+                phrase: "Klammer auf",
+                type: "text",
+                text: "(",
+                showButton: true,
+                order: 6
+            },
+
+            {
+                id: 7,
+                phrase: "Klammer zu",
+                type: "text",
+                text: ")",
+                showButton: true,
+                order: 7
+            }
+
+        ];
+
+
+        let shortcuts =
+            JSON.parse(localStorage.getItem('voicenote_shortcuts'));
+
+
+        if (!shortcuts) {
+
+            shortcuts = DEFAULT_SHORTCUTS;
+
+        } else {
+
+            if (!shortcuts.find(s => s.action === 'normal')) {
+
+                shortcuts.push({
+                    id: Date.now(),
+                    phrase: "normal text",
+                    type: "action",
+                    action: "normal",
+                    showButton: true,
+                    order: shortcuts.length + 1
+                });
+
+                localStorage.setItem(
+                    'voicenote_shortcuts',
+                    JSON.stringify(shortcuts)
+                );
+            }
+        }
+
+
+        /* =========================================================
+           INITIALIZATION
+        ========================================================= */
+
+        window.addEventListener('load', () => {
+
+            document.getElementById('lang-select').value = currentLang;
+
+            initNotes();
+
+            renderShortcutBar();
+
+            initIndexedDB();
+
+            setupSpeechRecognition();
+
+
+            editor.addEventListener('keyup', saveSelection);
+            editor.addEventListener('mouseup', saveSelection);
+            editor.addEventListener('touchend', saveSelection);
+            editor.addEventListener('focusout', saveSelection);
+
+            editor.addEventListener('input', () => {
+
+                saveSelection();
+                autoSaveNote();
+
+            });
+
+
+            if ('serviceWorker' in navigator) {
+
+                navigator.serviceWorker
+                    .register('sw.js')
+                    .catch(() => {});
+
+            }
+
+        });
+
+
+        /* =========================================================
+           CARET / CURSOR
+        ========================================================= */
+
+        function saveSelection() {
+
+            const selection = window.getSelection();
+
+            if (!selection ||
+                selection.rangeCount === 0 ||
+                !editor.contains(selection.anchorNode)) {
+
+                return;
+            }
+
+            savedCaretRange =
+                selection.getRangeAt(0).cloneRange();
+        }
+
+
+        function restoreSelection() {
+
+            editor.focus();
+
+            const selection = window.getSelection();
+
+            if (savedCaretRange) {
+
+                try {
+
+                    selection.removeAllRanges();
+
+                    selection.addRange(
+                        savedCaretRange.cloneRange()
+                    );
+
+                    return;
+
+                } catch (e) {
+
+                    savedCaretRange = null;
+                }
+            }
+
+
+            const range = document.createRange();
+
+            range.selectNodeContents(editor);
+
+            range.collapse(false);
+
+            selection.removeAllRanges();
+
+            selection.addRange(range);
+        }
+
+
+        /* =========================================================
+           NOTES
+        ========================================================= */
+
+        function initNotes() {
+
+            if (notes.length === 0) {
+
+                const newNote = {
+                    id: Date.now(),
+                    title: "Note 1",
+                    content: "<div><br></div>",
+                    timestamp: Date.now()
+                };
+
+                notes.push(newNote);
+
+                activeNoteId = newNote.id;
+
+                saveNotesData();
+            }
+
+
+            if (!activeNoteId ||
+                !notes.find(n => n.id == activeNoteId)) {
+
+                activeNoteId = notes[0].id;
+            }
+
+
+            loadActiveNote();
+        }
+
+
+        function saveNotesData() {
+
+            localStorage.setItem(
+                'voicenote_notes',
+                JSON.stringify(notes)
+            );
+
+            localStorage.setItem(
+                'voicenote_active_id',
+                activeNoteId
+            );
+        }
+
+
+        function loadActiveNote() {
+
+            const note =
+                notes.find(n => n.id == activeNoteId);
+
+            if (!note) return;
+
+            editor.innerHTML = note.content;
+
+            document.getElementById(
+                'active-note-title'
+            ).textContent = note.title;
+
+            savedCaretRange = null;
+        }
+
+
+        function autoSaveNote() {
+
+            const note =
+                notes.find(n => n.id == activeNoteId);
+
+            if (!note) return;
+
+            note.content = editor.innerHTML;
+
+            const plainText =
+                editor.innerText.trim();
+
+            if (plainText.length > 0) {
+
+                note.title =
+                    plainText
+                        .split('\n')[0]
+                        .substring(0, 25) || "Note";
+
+                document.getElementById(
+                    'active-note-title'
+                ).textContent = note.title;
+            }
+
+            note.timestamp = Date.now();
+
+            saveNotesData();
+        }
+
+
+        function createNewNote() {
+
+            const newNote = {
+                id: Date.now(),
+                title: "New Note",
+                content: "<div><br></div>",
+                timestamp: Date.now()
+            };
+
+            notes.push(newNote);
+
+            activeNoteId = newNote.id;
+
+            saveNotesData();
+
+            loadActiveNote();
+
+            renderNotesList();
+
+            closeModal('notes-modal');
+
+            setTimeout(() => {
+
+                editor.focus();
+
+            }, 100);
+        }
+
+
+        function switchNote(id) {
+
+            autoSaveNote();
+
+            activeNoteId = id;
+
+            saveNotesData();
+
+            loadActiveNote();
+
+            closeModal('notes-modal');
+
+        }
+
+
+        function deleteNote(id, event) {
+
+            event.stopPropagation();
+
+            if (!confirm('Delete this note?')) return;
+
+            notes = notes.filter(
+                n => n.id != id
+            );
+
+            if (notes.length === 0) {
+
+                const newNote = {
+                    id: Date.now(),
+                    title: "Note 1",
+                    content: "<div><br></div>",
+                    timestamp: Date.now()
+                };
+
+                notes.push(newNote);
+
+                activeNoteId = newNote.id;
+
+            } else {
+
+                if (activeNoteId == id) {
+                    activeNoteId = notes[0].id;
+                }
+
+            }
+
+            saveNotesData();
+
+            loadActiveNote();
+
+            renderNotesList();
+        }
+
+
+        function renderNotesList() {
+
+            const list =
+                document.getElementById('notes-list');
+
+            list.innerHTML = '';
+
+            notes
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .forEach(note => {
+
+                    const date =
+                        new Date(note.timestamp)
+                            .toLocaleDateString();
+
+                    const div =
+                        document.createElement('div');
+
+                    div.className =
+                        'list-item flex-between';
+
+                    div.style.cursor =
+                        'pointer';
+
+                    if (note.id == activeNoteId) {
+
+                        div.style.borderLeft =
+                            '4px solid var(--primary-color)';
+                    }
+
+
+                    div.onclick =
+                        () => switchNote(note.id);
+
+
+                    const info =
+                        document.createElement('div');
+
+                    info.style.overflow =
+                        'hidden';
+
+
+                    const title =
+                        document.createElement('h3');
+
+                    title.style.fontSize =
+                        '1.1rem';
+
+                    title.style.whiteSpace =
+                        'nowrap';
+
+                    title.style.overflow =
+                        'hidden';
+
+                    title.style.textOverflow =
+                        'ellipsis';
+
+                    title.textContent =
+                        note.title;
+
+
+                    const dateSpan =
+                        document.createElement('span');
+
+                    dateSpan.style.fontSize =
+                        '0.8rem';
+
+                    dateSpan.style.color =
+                        'var(--text-muted)';
+
+                    dateSpan.textContent =
+                        date;
+
+
+                    info.appendChild(title);
+
+                    info.appendChild(dateSpan);
+
+
+                    const deleteButton =
+                        document.createElement('button');
+
+                    deleteButton.className =
+                        'icon-btn';
+
+                    deleteButton.type =
+                        'button';
+
+                    deleteButton.style.color =
+                        'var(--error)';
+
+                    deleteButton.setAttribute(
+                        'aria-label',
+                        'Delete note'
+                    );
+
+
+                    deleteButton.onclick =
+                        event => deleteNote(
+                            note.id,
+                            event
+                        );
+
+
+                    deleteButton.innerHTML = `
+                        <svg class="svg-small" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    `;
+
+
+                    div.appendChild(info);
+
+                    div.appendChild(deleteButton);
+
+                    list.appendChild(div);
+
+                });
+        }
+
+
+        /* =========================================================
+           INDEXED DB
+        ========================================================= */
+
+        function initIndexedDB() {
+
+            const request =
+                indexedDB.open("VoiceNoteDB", 1);
+
+
+            request.onupgradeneeded =
+                event => {
+
+                    db = event.target.result;
+
+                    if (!db.objectStoreNames.contains('recordings')) {
+
+                        db.createObjectStore(
+                            'recordings',
+                            {
+                                keyPath: 'id',
+                                autoIncrement: true
+                            }
+                        );
+                    }
+                };
+
+
+            request.onsuccess =
+                event => {
+
+                    db = event.target.result;
+
+                };
+
+
+            request.onerror =
+                () => {
+
+                    console.warn(
+                        "IndexedDB unavailable."
+                    );
+                };
+        }
+
+
+        function saveAudioToDB(blob) {
+
+            if (!db || !blob || blob.size === 0) {
+                return;
+            }
+
+            try {
+
+                const tx =
+                    db.transaction(
+                        'recordings',
+                        'readwrite'
+                    );
+
+                const store =
+                    tx.objectStore('recordings');
+
+                store.add({
+                    timestamp: Date.now(),
+                    blob: blob
+                });
+
+            } catch (e) {
+
+                console.warn(
+                    "Could not save recording:",
+                    e
+                );
+            }
+        }
+
+
+        /* =========================================================
+           SPEECH RECOGNITION
+           
+           IMPORTANT:
+           We deliberately do NOT call getUserMedia() while
+           SpeechRecognition is running.
+
+           Android browsers can otherwise have two separate
+           microphone consumers fighting over the same microphone.
+        ========================================================= */
+
+        function setupSpeechRecognition() {
+
+            const SpeechRecognition =
+                window.SpeechRecognition ||
+                window.webkitSpeechRecognition;
+
+
+            if (!SpeechRecognition) {
+
+                recognition = null;
+
+                setSpeechStatus(
+                    "Speech recognition is not supported by this browser.",
+                    "error"
+                );
+
+                micButton.classList.add('disabled');
+
+                return;
+            }
+
+
+            recognition =
+                new SpeechRecognition();
+
+
+            recognition.continuous = true;
+
+            recognition.interimResults = true;
+
+            recognition.lang = currentLang;
+
+
+            /*
+             * Important:
+             * Keep maxAlternatives at 1.
+             * This reduces unnecessary processing on mobile.
+             */
+            recognition.maxAlternatives = 1;
+
+
+            recognition.onstart = () => {
+
+                recognitionRunning = true;
+                recognitionStartPending = false;
+
+                setSpeechStatus(
+                    "Listening… speak normally.",
+                    "ok"
+                );
+
+            };
+
+
+            recognition.onresult = event => {
+
+                let interim = '';
+
+
+                for (
+                    let i = event.resultIndex;
+                    i < event.results.length;
+                    i++
+                ) {
+
+                    const result =
+                        event.results[i];
+
+                    const transcript =
+                        result[0].transcript;
+
+
+                    if (result.isFinal) {
+
+                        /*
+                         * Hide the interim text before inserting
+                         * the final result.
+                         */
+                        interimDisplay.style.display =
+                            'none';
+
+                        processFinalTranscript(
+                            transcript
+                        );
+
+                    } else {
+
+                        interim += transcript;
+                    }
+                }
+
+
+                if (interim.trim()) {
+
+                    interimDisplay.style.display =
+                        'block';
+
+                    interimDisplay.textContent =
+                        interim;
+
+                } else {
+
+                    interimDisplay.style.display =
+                        'none';
+                }
+            };
+
+
+            recognition.onerror = event => {
+
+                console.warn(
+                    "Speech recognition error:",
+                    event.error
+                );
+
+
+                /*
+                 * These errors are normally recoverable.
+                 * Do not immediately restart here.
+                 * onend will handle restarting.
+                 */
+
+                if (event.error === 'not-allowed' ||
+                    event.error === 'service-not-allowed') {
+
+                    isListening = false;
+
+                    manuallyStopping = true;
+
+                    recognitionRunning = false;
+
+                    recognitionStartPending = false;
+
+                    micButton.classList.remove(
+                        'listening'
+                    );
+
+                    setSpeechStatus(
+                        "Microphone permission was denied. Please allow microphone access and try again.",
+                        "error"
+                    );
+
+                    interimDisplay.style.display =
+                        'none';
+
+                    return;
+                }
+
+
+                if (event.error === 'audio-capture') {
+
+                    setSpeechStatus(
+                        "The microphone could not be accessed. Another app may be using it.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                if (event.error === 'no-speech') {
+
+                    /*
+                     * This is normal when the user is silent.
+                     * Do not stop the application.
+                     */
+
+                    setSpeechStatus(
+                        "Listening…",
+                        "ok"
+                    );
+
+                    return;
+                }
+
+
+                if (event.error === 'network') {
+
+                    setSpeechStatus(
+                        "Speech recognition network error. Trying again…",
+                        "error"
+                    );
+
+                    return;
+                }
+            };
+
+
+            recognition.onend = () => {
+
+                recognitionRunning = false;
+
+                recognitionStartPending = false;
+
+
+                /*
+                 * Android/Chrome often ends a continuous recognition
+                 * session after a period of silence.
+                 *
+                 * We restart only if the USER still wants recording.
+                 *
+                 * We also wait 700ms instead of immediately calling
+                 * start(), which avoids the rapid start/stop loop.
+                 */
+
+                if (!isListening ||
+                    manuallyStopping) {
+
+                    return;
+                }
+
+
+                clearTimeout(restartTimer);
+
+
+                restartTimer =
+                    setTimeout(() => {
+
+                        if (!isListening ||
+                            manuallyStopping ||
+                            recognitionRunning ||
+                            recognitionStartPending) {
+
+                            return;
+                        }
+
+
+                        startRecognition();
+
+                    }, 700);
+            };
+
+
+            setSpeechStatus(
+                "Speech recognition is ready.",
+                "ok"
+            );
+        }
+
+
+        function setSpeechStatus(text, type) {
+
+            if (!speechStatus) return;
+
+            speechStatus.textContent = text;
+
+            speechStatus.className =
+                type || '';
+        }
+
+
+        function startRecognition() {
+
+            if (!recognition ||
+                !isListening ||
+                recognitionRunning ||
+                recognitionStartPending) {
+
+                return;
+            }
+
+
+            recognitionStartPending = true;
+
+            recognition.lang = currentLang;
+
+
+            try {
+
+                recognition.start();
+
+            } catch (error) {
+
+                recognitionStartPending = false;
+
+                console.warn(
+                    "Could not start speech recognition:",
+                    error
+                );
+
+
+                /*
+                 * InvalidStateError normally means recognition was
+                 * already starting. Wait and let onend handle it.
+                 */
+
+                if (error.name !== 'InvalidStateError') {
+
+                    setSpeechStatus(
+                        "Could not start speech recognition.",
+                        "error"
+                    );
+                }
+            }
+        }
+
+
+        /* =========================================================
+           LANGUAGE
+        ========================================================= */
+
+        function changeLanguage(lang) {
+
+            currentLang = lang;
+
+            localStorage.setItem(
+                'voicenote_lang',
+                lang
+            );
+
+
+            if (!recognition) {
+                return;
+            }
+
+
+            recognition.lang = currentLang;
+
+
+            /*
+             * If recognition is currently active, stop it cleanly.
+             * onend will restart it with the new language.
+             */
+
+            if (isListening) {
+
+                manuallyStopping = false;
+
+                clearTimeout(restartTimer);
+
+                try {
+
+                    recognition.stop();
+
+                } catch (e) {}
+
+                setSpeechStatus(
+                    "Changing language…",
+                    "ok"
+                );
+
+            }
+        }
+
+
+        /* =========================================================
+           MICROPHONE
+        ========================================================= */
+
+        async function toggleMic() {
+
+            if (!recognition) {
+
+                alert(
+                    "Speech recognition is not supported by this browser."
+                );
+
+                return;
+            }
+
+
+            if (isListening) {
+
+                stopListening();
+
+            } else {
+
+                await startListening();
+
+            }
+        }
+
+
+        async function startListening() {
+
+            /*
+             * Clear any old restart timer.
+             */
+            clearTimeout(restartTimer);
+
+
+            isListening = true;
+
+            manuallyStopping = false;
+
+            recognitionRunning = false;
+
+            recognitionStartPending = false;
+
+
+            micButton.classList.add(
+                'listening'
+            );
+
+            micButton.setAttribute(
+                'aria-label',
+                'Stop voice transcription'
+            );
+
+
+            editor.focus();
+
+
+            /*
+             * Put the cursor at the end if no valid cursor
+             * is currently saved.
+             */
+            restoreSelection();
+
+
+            setSpeechStatus(
+                "Starting microphone…",
+                "ok"
+            );
+
+
+            /*
+             * IMPORTANT:
+             *
+             * We do NOT call getUserMedia() here.
+             *
+             * SpeechRecognition itself requests the microphone.
+             * Calling getUserMedia() at the same time was one of
+             * the main causes of the repeated start/stop behavior.
+             */
+
+            setTimeout(() => {
+
+                if (!isListening) return;
+
+                startRecognition();
+
+            }, 150);
+        }
+
+
+        function stopListening() {
+
+            isListening = false;
+
+            manuallyStopping = true;
+
+            recognitionStartPending = false;
+
+            recognitionRunning = false;
+
+
+            clearTimeout(restartTimer);
+
+
+            micButton.classList.remove(
+                'listening'
+            );
+
+            micButton.setAttribute(
+                'aria-label',
+                'Start voice transcription'
+            );
+
+
+            interimDisplay.style.display =
+                'none';
+
+
+            if (recognition) {
+
+                try {
+
+                    recognition.stop();
+
+                } catch (e) {}
+
+            }
+
+
+            setSpeechStatus(
+                "Speech recognition is stopped."
+            );
+        }
+
+
+        function forceStopAll() {
+
+            isListening = false;
+
+            manuallyStopping = true;
+
+            recognitionStartPending = false;
+
+            recognitionRunning = false;
+
+
+            clearTimeout(restartTimer);
+
+
+            micButton.classList.remove(
+                'listening'
+            );
+
+
+            if (recognition) {
+
+                try {
+
+                    recognition.stop();
+
+                } catch (e) {}
+            }
+
+
+            interimDisplay.style.display =
+                'none';
+        }
+
+
+        /* =========================================================
+           INSERT TEXT INTO EDITOR
+        ========================================================= */
+
+        function insertTextAtCursor(text) {
+
+            if (!text) return;
+
+            restoreSelection();
+
+
+            const selection =
+                window.getSelection();
+
+
+            if (!selection ||
+                selection.rangeCount === 0) {
+
+                editor.focus();
+
+                editor.appendChild(
+                    document.createTextNode(text)
+                );
+
+                return;
+            }
+
+
+            const range =
+                selection.getRangeAt(0);
+
+
+            /*
+             * Make sure the range belongs to our editor.
+             */
+            if (!editor.contains(range.commonAncestorContainer)) {
+
+                editor.focus();
+
+                const fallback =
+                    document.createRange();
+
+                fallback.selectNodeContents(editor);
+
+                fallback.collapse(false);
+
+                selection.removeAllRanges();
+
+                selection.addRange(fallback);
+            }
+
+
+            const currentRange =
+                selection.getRangeAt(0);
+
+
+            currentRange.deleteContents();
+
+
+            const textNode =
+                document.createTextNode(text);
+
+
+            currentRange.insertNode(
+                textNode
+            );
+
+
+            /*
+             * Move caret after inserted text.
+             */
+            currentRange.setStartAfter(
+                textNode
+            );
+
+            currentRange.collapse(true);
+
+
+            selection.removeAllRanges();
+
+            selection.addRange(
+                currentRange
+            );
+
+
+            savedCaretRange =
+                currentRange.cloneRange();
+
+
+            editor.focus();
+        }
+
+
+        /* =========================================================
+           TRANSCRIPT PROCESSING
+        ========================================================= */
+
+        function processFinalTranscript(rawText) {
+
+            if (!rawText) return;
+
+
+            interimDisplay.style.display =
+                'none';
+
+
+            let text =
+                rawText.trim();
+
+
+            if (!text) return;
+
+
+            /*
+             * Text shortcuts
+             */
+            shortcuts
+                .filter(s => s.type === 'text')
+                .forEach(sc => {
+
+                    if (!sc.phrase) return;
+
+                    const escapedPhrase =
+                        escapeRegExp(sc.phrase);
+
+                    const reg =
+                        new RegExp(
+                            escapedPhrase,
+                            'gi'
+                        );
+
+                    text =
+                        text.replace(
+                            reg,
+                            sc.text || ''
+                        );
+                });
+
+
+            /*
+             * Action shortcuts.
+             *
+             * Process one command at a time.
+             */
+            processTextWithCommands(
+                text
+            );
+
+
+            saveSelection();
+
+            autoSaveNote();
+        }
+
+
+        function processTextWithCommands(text) {
+
+            let remaining =
+                text;
+
+
+            while (remaining.trim()) {
+
+                let match = null;
+                let matchedShortcut = null;
+
+
+                for (
+                    const sc of shortcuts
+                        .filter(s => s.type === 'action')
+                ) {
+
+                    if (!sc.phrase) continue;
+
+
+                    const index =
+                        remaining
+                            .toLowerCase()
+                            .indexOf(
+                                sc.phrase.toLowerCase()
+                            );
+
+
+                    if (index !== -1 &&
+                        (!match || index < match.index)) {
+
+                        match = {
+                            index: index,
+                            phrase: sc.phrase
+                        };
+
+                        matchedShortcut = sc;
+                    }
+                }
+
+
+                if (!match ||
+                    !matchedShortcut) {
+
+                    insertTextAtCursor(
+                        " " + remaining.trim()
+                    );
+
+                    break;
+                }
+
+
+                const before =
+                    remaining.substring(
+                        0,
+                        match.index
+                    );
+
+
+                if (before.trim()) {
+
+                    insertTextAtCursor(
+                        " " + before.trim()
+                    );
+                }
+
+
+                executeCommand(
+                    matchedShortcut.action
+                );
+
+
+                remaining =
+                    remaining.substring(
+                        match.index +
+                        match.phrase.length
+                    );
+            }
+
+
+            saveSelection();
+
+            autoSaveNote();
+        }
+
+
+        function escapeRegExp(string) {
+
+            return string.replace(
+                /[.*+?^${}()|[\]\\]/g,
+                '\\$&'
+            );
+        }
+
+
+        /* =========================================================
+           COMMANDS
+        ========================================================= */
+
+        function executeCommand(action) {
+
+            restoreSelection();
+
+
+            if (action === 'newline') {
+
+                document.execCommand(
+                    'insertParagraph',
+                    false,
+                    null
+                );
+
+                document.execCommand(
+                    'formatBlock',
+                    false,
+                    'DIV'
+                );
+
+            } else if (action === 'h1') {
+
+                document.execCommand(
+                    'formatBlock',
+                    false,
+                    'H1'
+                );
+
+            } else if (action === 'h2') {
+
+                document.execCommand(
+                    'formatBlock',
+                    false,
+                    'H2'
+                );
+
+            } else if (action === 'footnote') {
+
+                document.execCommand(
+                    'formatBlock',
+                    false,
+                    'H6'
+                );
+
+            } else if (action === 'normal') {
+
+                document.execCommand(
+                    'formatBlock',
+                    false,
+                    'DIV'
+                );
+
+                document.execCommand(
+                    'removeFormat',
+                    false,
+                    null
+                );
+            }
+
+
+            saveSelection();
+
+            autoSaveNote();
+        }
+
+
+        /* =========================================================
+           VISIBILITY
+        ========================================================= */
+
+        function toggleVisibility() {
+
+            isHidden = !isHidden;
+
+            const overlay =
+                document.getElementById(
+                    'hidden-overlay'
+                );
+
+            const eyeIcon =
+                document.getElementById(
+                    'eye-icon'
+                );
+
+
+            if (isHidden) {
+
+                overlay.style.display =
+                    'flex';
+
+
+                eyeIcon.innerHTML = `
+                    <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .43-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+                `;
+
+            } else {
+
+                overlay.style.display =
+                    'none';
+
+
+                eyeIcon.innerHTML = `
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                `;
+            }
+        }
+
+
+        /* =========================================================
+           SHORTCUT BAR
+        ========================================================= */
+
+        function renderShortcutBar() {
+
+            const bar =
+                document.getElementById(
+                    'shortcut-bar'
+                );
+
+            bar.innerHTML = '';
+
+
+            shortcuts
+                .sort((a, b) => a.order - b.order)
+                .forEach(sc => {
+
+                    if (!sc.showButton) return;
+
+
+                    const button =
+                        document.createElement(
+                            'button'
+                        );
+
+                    button.type =
+                        'button';
+
+                    button.className =
+                        'shortcut-chip';
+
+                    button.textContent =
+                        sc.phrase;
+
+
+                    /*
+                     * mousedown prevents the editor from losing
+                     * its cursor before the button action executes.
+                     */
+                    button.onmousedown =
+                        event => {
+
+                            event.preventDefault();
+
+                            restoreSelection();
+
+
+                            if (sc.type === 'action') {
+
+                                executeCommand(
+                                    sc.action
+                                );
+
+                            } else {
+
+                                insertTextAtCursor(
+                                    (sc.text || '') + " "
+                                );
+
+                                saveSelection();
+
+                                autoSaveNote();
+                            }
+                        };
+
+
+                    bar.appendChild(
+                        button
+                    );
+                });
+        }
+
+
+        /* =========================================================
+           MODALS
+        ========================================================= */
+
+        function openModal(id) {
+
+            if (id === 'notes-modal') {
+                renderNotesList();
+            }
+
+            if (id === 'settings-modal') {
+                renderSettingsList();
+            }
+
+            if (id === 'recordings-modal') {
+                renderRecordingsList();
+            }
+
+
+            document.getElementById(id)
+                .style.display = 'flex';
+        }
+
+
+        function closeModal(id) {
+
+            document.getElementById(id)
+                .style.display = 'none';
+
+            /*
+             * Restore editor focus after closing a modal.
+             */
+            setTimeout(() => {
+
+                if (id === 'settings-modal' ||
+                    id === 'notes-modal') {
+
+                    restoreSelection();
+                }
+
+            }, 50);
+        }
+
+
+        /* =========================================================
+           SETTINGS
+        ========================================================= */
+
+        function renderSettingsList() {
+
+            const list =
+                document.getElementById(
+                    'settings-list'
+                );
+
+            list.innerHTML = '';
+
+
+            shortcuts
+                .sort((a, b) => a.order - b.order)
+                .forEach((sc, index) => {
+
+                    const div =
+                        document.createElement(
+                            'div'
+                        );
+
+                    div.className =
+                        'list-item';
+
+
+                    const phraseLabel =
+                        document.createElement(
+                            'label'
+                        );
+
+                    phraseLabel.textContent =
+                        'Phrase spoken:';
+
+
+                    const phraseInput =
+                        document.createElement(
+                            'input'
+                        );
+
+                    phraseInput.type =
+                        'text';
+
+                    phraseInput.value =
+                        sc.phrase;
+
+
+                    phraseInput.onchange =
+                        () => {
+
+                            updateShortcut(
+                                sc.id,
+                                'phrase',
+                                phraseInput.value
+                            );
+                        };
+
+
+                    div.appendChild(
+                        phraseLabel
+                    );
+
+                    div.appendChild(
+                        phraseInput
+                    );
+
+
+                    const typeLabel =
+                        document.createElement(
+                            'label'
+                        );
+
+                    typeLabel.textContent =
+                        'Action Type:';
+
+
+                    const typeSelect =
+                        document.createElement(
+                            'select'
+                        );
+
+
+                    typeSelect.innerHTML = `
+                        <option value="text">Insert Text</option>
+                        <option value="action">Format Action</option>
+                    `;
+
+
+                    typeSelect.value =
+                        sc.type;
+
+
+                    typeSelect.onchange =
+                        () => {
+
+                            updateShortcut(
+                                sc.id,
+                                'type',
+                                typeSelect.value
+                            );
+
+                            renderSettingsList();
+                        };
+
+
+                    div.appendChild(
+                        typeLabel
+                    );
+
+                    div.appendChild(
+                        typeSelect
+                    );
+
+
+                    if (sc.type === 'text') {
+
+                        const textLabel =
+                            document.createElement(
+                                'label'
+                            );
+
+                        textLabel.textContent =
+                            'Text to type:';
+
+
+                        const textInput =
+                            document.createElement(
+                                'input'
+                            );
+
+                        textInput.type =
+                            'text';
+
+                        textInput.value =
+                            sc.text || '';
+
+
+                        textInput.onchange =
+                            () => {
+
+                                updateShortcut(
+                                    sc.id,
+                                    'text',
+                                    textInput.value
+                                );
+                            };
+
+
+                        div.appendChild(
+                            textLabel
+                        );
+
+                        div.appendChild(
+                            textInput
+                        );
+
+                    } else {
+
+                        const formatLabel =
+                            document.createElement(
+                                'label'
+                            );
+
+                        formatLabel.textContent =
+                            'Formatting:';
+
+
+                        const actionSelect =
+                            document.createElement(
+                                'select'
+                            );
+
+
+                        actionSelect.innerHTML = `
+                            <option value="newline">New Line</option>
+                            <option value="h1">Title (H1)</option>
+                            <option value="h2">Subtitle (H2)</option>
+                            <option value="footnote">Footnote</option>
+                            <option value="normal">Normal Text</option>
+                        `;
+
+
+                        actionSelect.value =
+                            sc.action || 'newline';
+
+
+                        actionSelect.onchange =
+                            () => {
+
+                                updateShortcut(
+                                    sc.id,
+                                    'action',
+                                    actionSelect.value
+                                );
+                            };
+
+
+                        div.appendChild(
+                            formatLabel
+                        );
+
+                        div.appendChild(
+                            actionSelect
+                        );
+                    }
+
+
+                    const bottom =
+                        document.createElement(
+                            'div'
+                        );
+
+                    bottom.className =
+                        'flex-between';
+
+                    bottom.style.marginTop =
+                        '15px';
+
+
+                    const checkboxLabel =
+                        document.createElement(
+                            'label'
+                        );
+
+                    checkboxLabel.style.display =
+                        'flex';
+
+                    checkboxLabel.style.alignItems =
+                        'center';
+
+                    checkboxLabel.style.gap =
+                        '8px';
+
+
+                    const checkbox =
+                        document.createElement(
+                            'input'
+                        );
+
+                    checkbox.type =
+                        'checkbox';
+
+                    checkbox.checked =
+                        !!sc.showButton;
+
+                    checkbox.style.width =
+                        '18px';
+
+                    checkbox.style.height =
+                        '18px';
+
+                    checkbox.style.margin =
+                        '0';
+
+
+                    checkbox.onchange =
+                        () => {
+
+                            updateShortcut(
+                                sc.id,
+                                'showButton',
+                                checkbox.checked
+                            );
+                        };
+
+
+                    checkboxLabel.appendChild(
+                        checkbox
+                    );
+
+                    checkboxLabel.appendChild(
+                        document.createTextNode(
+                            'Show Button'
+                        )
+                    );
+
+
+                    const buttons =
+                        document.createElement(
+                            'div'
+                        );
+
+                    buttons.style.display =
+                        'flex';
+
+                    buttons.style.gap =
+                        '5px';
+
+
+                    const upButton =
+                        document.createElement(
+                            'button'
+                        );
+
+                    upButton.className =
+                        'btn btn-secondary';
+
+                    upButton.type =
+                        'button';
+
+                    upButton.textContent =
+                        '↑';
+
+                    upButton.onclick =
+                        () => moveShortcut(
+                            index,
+                            -1
+                        );
+
+
+                    const downButton =
+                        document.createElement(
+                            'button'
+                        );
+
+                    downButton.className =
+                        'btn btn-secondary';
+
+                    downButton.type =
+                        'button';
+
+                    downButton.textContent =
+                        '↓';
+
+                    downButton.onclick =
+                        () => moveShortcut(
+                            index,
+                            1
+                        );
+
+
+                    const deleteButton =
+                        document.createElement(
+                            'button'
+                        );
+
+                    deleteButton.className =
+                        'btn btn-danger';
+
+                    deleteButton.type =
+                        'button';
+
+
+                    deleteButton.innerHTML = `
+                        <svg class="svg-small" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    `;
+
+
+                    deleteButton.onclick =
+                        () => deleteShortcut(
+                            sc.id
+                        );
+
+
+                    buttons.appendChild(
+                        upButton
+                    );
+
+                    buttons.appendChild(
+                        downButton
+                    );
+
+                    buttons.appendChild(
+                        deleteButton
+                    );
+
+
+                    bottom.appendChild(
+                        checkboxLabel
+                    );
+
+                    bottom.appendChild(
+                        buttons
+                    );
+
+
+                    div.appendChild(
+                        bottom
+                    );
+
+
+                    list.appendChild(
+                        div
+                    );
+
+                });
+        }
+
+
+        function updateShortcut(id, key, value) {
+
+            const shortcut =
+                shortcuts.find(
+                    s => s.id === id
+                );
+
+            if (!shortcut) return;
+
+            shortcut[key] = value;
+
+            saveShortcuts();
+        }
+
+
+        function moveShortcut(index, direction) {
+
+            if (
+                index + direction < 0 ||
+                index + direction >= shortcuts.length
+            ) {
+
+                return;
+            }
+
+
+            const temp =
+                shortcuts[index].order;
+
+
+            shortcuts[index].order =
+                shortcuts[index + direction].order;
+
+
+            shortcuts[index + direction].order =
+                temp;
+
+
+            saveShortcuts();
+
+            renderSettingsList();
+        }
+
+
+        function deleteShortcut(id) {
+
+            shortcuts =
+                shortcuts.filter(
+                    s => s.id !== id
+                );
+
+            saveShortcuts();
+
+            renderSettingsList();
+        }
+
+
+        function addNewShortcut() {
+
+            const newId =
+                shortcuts.length > 0
+                    ? Math.max(
+                        ...shortcuts.map(
+                            s => s.id
+                        )
+                    ) + 1
+                    : 1;
+
+
+            shortcuts.push({
+
+                id: newId,
+
+                phrase: "new word",
+
+                type: "text",
+
+                text: "word",
+
+                showButton: true,
+
+                order: shortcuts.length + 1
+
+            });
+
+
+            saveShortcuts();
+
+            renderSettingsList();
+        }
+
+
+        function saveShortcuts() {
+
+            localStorage.setItem(
+                'voicenote_shortcuts',
+                JSON.stringify(shortcuts)
+            );
+
+            renderShortcutBar();
+        }
+
+
+        /* =========================================================
+           RECORDINGS VIEWER
+           
+           Note:
+           The automatic MediaRecorder has intentionally been
+           removed from the microphone button because running
+           MediaRecorder + SpeechRecognition simultaneously is
+           unreliable on many Android browsers.
+
+           The recordings database is retained so existing saved
+           recordings still work.
+        ========================================================= */
+
+        function renderRecordingsList() {
+
+            const list =
+                document.getElementById(
+                    'recordings-list'
+                );
+
+
+            list.innerHTML =
+                '<p>Loading recordings...</p>';
+
+
+            if (!db) {
+
+                list.innerHTML =
+                    '<p>Database not available.</p>';
+
+                return;
+            }
+
+
+            try {
+
+                const tx =
+                    db.transaction(
+                        'recordings',
+                        'readonly'
+                    );
+
+
+                const store =
+                    tx.objectStore(
+                        'recordings'
+                    );
+
+
+                const request =
+                    store.getAll();
+
+
+                request.onsuccess =
+                    () => {
+
+                        list.innerHTML = '';
+
+
+                        const data =
+                            request.result.reverse();
+
+
+                        if (data.length === 0) {
+
+                            list.innerHTML =
+                                '<p>No recordings yet.</p>';
+
+                            return;
+                        }
+
+
+                        data.forEach(item => {
+
+                            const blobUrl =
+                                URL.createObjectURL(
+                                    item.blob
+                                );
+
+
+                            const date =
+                                new Date(
+                                    item.timestamp
+                                ).toLocaleString();
+
+
+                            const div =
+                                document.createElement(
+                                    'div'
+                                );
+
+                            div.className =
+                                'list-item recording-item';
+
+
+                            const top =
+                                document.createElement(
+                                    'div'
+                                );
+
+                            top.className =
+                                'flex-between';
+
+
+                            const strong =
+                                document.createElement(
+                                    'strong'
+                                );
+
+                            strong.textContent =
+                                date;
+
+
+                            const deleteButton =
+                                document.createElement(
+                                    'button'
+                                );
+
+                            deleteButton.className =
+                                'btn btn-danger';
+
+                            deleteButton.type =
+                                'button';
+
+                            deleteButton.style.padding =
+                                '4px 8px';
+
+                            deleteButton.style.fontSize =
+                                '0.8rem';
+
+                            deleteButton.textContent =
+                                'Delete';
+
+
+                            deleteButton.onclick =
+                                () => deleteRecording(
+                                    item.id
+                                );
+
+
+                            top.appendChild(
+                                strong
+                            );
+
+                            top.appendChild(
+                                deleteButton
+                            );
+
+
+                            const audio =
+                                document.createElement(
+                                    'audio'
+                                );
+
+                            audio.controls =
+                                true;
+
+                            audio.src =
+                                blobUrl;
+
+
+                            div.appendChild(
+                                top
+                            );
+
+                            div.appendChild(
+                                audio
+                            );
+
+
+                            list.appendChild(
+                                div
+                            );
+                        });
+                    };
+
+            } catch (error) {
+
+                console.error(
+                    error
+                );
+
+                list.innerHTML =
+                    '<p>Could not load recordings.</p>';
+            }
+        }
+
+
+        function deleteRecording(id) {
+
+            if (
+                !confirm(
+                    'Delete this audio segment?'
+                )
+            ) {
+
+                return;
+            }
+
+
+            if (!db) return;
+
+
+            const tx =
+                db.transaction(
+                    'recordings',
+                    'readwrite'
+                );
+
+
+            tx.objectStore(
+                'recordings'
+            ).delete(id);
+
+
+            tx.oncomplete =
+                () => {
+
+                    renderRecordingsList();
+
+                };
+        }
+
+
+        /* =========================================================
+           CLEANUP
+        ========================================================= */
+
+        window.addEventListener(
+            'beforeunload',
+            () => {
+
+                clearTimeout(
+                    restartTimer
+                );
+
+
+                if (recognition) {
+
+                    try {
+
+                        manuallyStopping = true;
+
+                        recognition.stop();
+
+                    } catch (e) {}
+                }
+            }
+        );
+
+    </script>
+
+</body>
+</html>" onclick="closeModal('notes-modal')">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </button>
         </div>
